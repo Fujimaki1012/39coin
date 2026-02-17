@@ -16,7 +16,7 @@
     }
     .hero { 
       background: var(--primary-gradient); 
-      padding: 3rem 1rem 4rem 1rem; /* カードが重なる分、下部(4rem)を広めに */
+      padding: 3rem 1rem 4rem 1rem; 
       color: white; 
       border-radius: 0 0 25px 25px; 
       box-shadow: 0 4px 10px rgba(255, 165, 0, 0.2);
@@ -25,7 +25,7 @@
       background: white; 
       border-radius: 20px; 
       padding: 2rem 1.5rem; 
-      margin-top: -40px; /* グラデーションに重ねる */
+      margin-top: -40px; 
       box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
     }
     .main-btn { 
@@ -51,6 +51,17 @@
       box-shadow: 0 0 0 0.125em rgba(255, 165, 0, 0.25);
     }
     #app-container { display: none; }
+    
+    /* モーダル用の追加スタイル */
+    .modal-content .box {
+      border-radius: 20px;
+      border: none;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    }
+    .modal-background {
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(3px); /* 背景を少しぼかすオシャレ効果 */
+    }
   </style>
 </head>
 <body>
@@ -101,13 +112,44 @@
       <button id="btnRead" class="button is-warning is-fullwidth main-btn mb-4">
         あげる<br><span class="is-size-6 mt-1">(NFCタッチ)</span>
       </button>
-      <p id="statusMsg" class="has-text-centered has-text-grey is-size-7">※相手のスマホまたはNFCカードにタッチしてください</p>
+      <p id="statusMsg" class="has-text-centered has-text-grey is-size-7">※相手の社員証にピタッとタッチしてください</p>
+    </div>
+  </div>
+
+  <div id="customModal" class="modal">
+    <div class="modal-background" onclick="closeModal()"></div>
+    <div class="modal-content px-4">
+      <div class="box has-text-centered pt-5 pb-5">
+        <h2 id="modalTitle" class="title is-4 mb-4 has-text-grey-dark">タイトル</h2>
+        <p id="modalMessage" class="subtitle is-6 has-text-grey mb-5" style="line-height: 1.6;">メッセージ</p>
+        <button class="button is-warning is-medium is-fullwidth has-text-weight-bold" style="border-radius: 12px;" onclick="closeModal()">
+          OK
+        </button>
+      </div>
     </div>
   </div>
 
   <script>
     // ！！！！ここにGASでデプロイしたURLを貼り付けてください！！！！
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
+
+    // --- カスタムモーダル制御 ---
+    let modalCallback = null;
+
+    function showModal(title, message, callback = null) {
+      document.getElementById('modalTitle').innerHTML = title;
+      document.getElementById('modalMessage').innerHTML = message.replace(/\n/g, '<br>');
+      document.getElementById('customModal').classList.add('is-active');
+      modalCallback = callback;
+    }
+
+    function closeModal() {
+      document.getElementById('customModal').classList.remove('is-active');
+      if (modalCallback) {
+        modalCallback(); // OKを押した後の処理（画面リロードなど）を実行
+        modalCallback = null;
+      }
+    }
 
     // --- ログイン処理 ---
     const myEmail = localStorage.getItem('userEmail');
@@ -120,7 +162,7 @@
 
     function saveLogin() {
       const email = document.getElementById('inputEmail').value.trim();
-      if(!email) return alert("入力してください");
+      if(!email) return showModal("お知らせ", "メールアドレスを入力してください");
       localStorage.setItem('userEmail', email);
       location.reload();
     }
@@ -152,8 +194,7 @@
         document.getElementById('remains').innerText = data.remains;
         document.getElementById('received').innerText = data.received;
       } catch(e) {
-        alert("エラー: " + e.message);
-        logout();
+        showModal("エラー", e.message, logout); // エラー時はモーダル表示後にログアウト
       }
     }
 
@@ -163,7 +204,7 @@
       const msg = document.getElementById('statusMsg');
 
       if (!('NDEFReader' in window)) {
-        alert("NFC非対応ブラウザです。Android Chromeでお試しください。");
+        showModal("お知らせ", "NFC非対応のブラウザです。<br>AndroidのChromeでお試しください。");
         return;
       }
 
@@ -178,15 +219,18 @@
           msg.innerText = "読み取り成功！通信中...";
           try {
             const res = await callGas({ action: 'sendPoint', email: myEmail, nfcId: event.serialNumber });
-            alert(`🎉 送信完了！\n${res.receiver}さんへ1コイン贈りました。\nあなたの残り: ${res.remains}枚`);
-            location.reload();
+            // 送信成功時のオシャレなモーダル表示
+            showModal(
+              "🎉 送信完了！", 
+              `<span class="has-text-weight-bold is-size-5">${res.receiver}</span> さんへ<br>1コイン贈りました！<br><br><span class="is-size-7">あなたの残り: ${res.remains}枚</span>`, 
+              () => location.reload()
+            );
           } catch(e) {
-            alert("送信エラー: " + e.message);
-            location.reload();
+            showModal("送信エラー", e.message, () => location.reload());
           }
         };
       } catch (error) {
-        alert("NFC起動エラー: " + error);
+        showModal("エラー", "NFCの起動に失敗しました。");
         btn.classList.remove('is-loading');
         btn.innerHTML = "あげる<br><span class='is-size-6 mt-1'>(NFCタッチ)</span>";
       }
@@ -194,4 +238,3 @@
   </script>
 </body>
 </html>
-
