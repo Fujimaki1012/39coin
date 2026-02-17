@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>サンキューコイン</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <style>
+    :root { --primary-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); }
+    body { background-color: #f5f7fa; font-family: sans-serif; min-height: 100vh; }
+    .hero { background: var(--primary-gradient); padding: 2rem 1rem; color: white; border-radius: 0 0 20px 20px; }
+    .status-card { background: white; border-radius: 15px; padding: 1.5rem; margin-top: -30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    .main-btn { height: 120px; font-size: 1.5rem !important; font-weight: bold; border-radius: 15px; }
+    #app-container { display: none; }
+  </style>
+</head>
+<body>
+
+  <div id="login-container" class="container px-4 py-6">
+    <div class="box has-text-centered mt-6">
+      <h1 class="title is-4">サンキューコイン</h1>
+      <p class="mb-4 has-text-grey">初回セットアップ</p>
+      <div class="field">
+        <label class="label has-text-left">登録したメールアドレス</label>
+        <div class="control">
+          <input class="input is-medium" type="email" id="inputEmail" placeholder="例: taro@example.com">
+        </div>
+      </div>
+      <button class="button is-warning is-fullwidth is-medium mt-5" onclick="saveLogin()">はじめる</button>
+    </div>
+  </div>
+
+  <div id="app-container">
+    <div class="hero has-text-centered">
+      <h1 class="title has-text-white is-4 mb-1">サンキューコイン</h1>
+      <button class="button is-small is-light is-outlined mt-2" onclick="logout()">ログアウト</button>
+    </div>
+
+    <div class="container px-4">
+      <div class="status-card has-text-centered mb-5">
+        <p class="subtitle is-6 mb-2 has-text-grey">現在のステータス</p>
+        <div class="columns is-mobile">
+          <div class="column">
+            <p class="heading">あげる残り</p>
+            <p class="title is-3 has-text-danger"><span id="remains">-</span><span class="is-size-6"> 枚</span></p>
+          </div>
+          <div class="column">
+            <p class="heading">もらった累計</p>
+            <p class="title is-3 has-text-success"><span id="received">-</span><span class="is-size-6"> 枚</span></p>
+          </div>
+        </div>
+      </div>
+
+      <button id="btnRead" class="button is-warning is-fullwidth main-btn mb-4">
+        あげる<br>(NFCタッチ)
+      </button>
+      <p id="statusMsg" class="has-text-centered has-text-grey is-size-7">※相手のスマホまたはNFCカードにタッチしてください</p>
+    </div>
+  </div>
+
+  <script>
+    // ！！！！ここにGASでデプロイしたURLを貼り付けてください！！！！
+    const GAS_URL = "https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXX/exec";
+
+    // --- ログイン処理 ---
+    const myEmail = localStorage.getItem('userEmail');
+
+    if (myEmail) {
+      document.getElementById('login-container').style.display = 'none';
+      document.getElementById('app-container').style.display = 'block';
+      loadUserData(myEmail);
+    }
+
+    function saveLogin() {
+      const email = document.getElementById('inputEmail').value.trim();
+      if(!email) return alert("入力してください");
+      localStorage.setItem('userEmail', email);
+      location.reload();
+    }
+
+    function logout() {
+      localStorage.removeItem('userEmail');
+      location.reload();
+    }
+
+    // --- GASとの通信関数 ---
+    async function callGas(params) {
+      const url = new URL(GAS_URL);
+      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+      
+      try {
+        const response = await fetch(url.toString(), { redirect: "follow", method: "GET" });
+        const data = await response.json();
+        if(data.error) throw new Error(data.error);
+        return data;
+      } catch (error) {
+        throw error;
+      }
+    }
+
+    // --- データ読み込み ---
+    async function loadUserData(email) {
+      try {
+        const data = await callGas({ action: 'getUserData', email: email });
+        document.getElementById('remains').innerText = data.remains;
+        document.getElementById('received').innerText = data.received;
+      } catch(e) {
+        alert("エラー: " + e.message);
+        logout(); // エラー時はメアドをリセット
+      }
+    }
+
+    // --- NFC読み取り処理 ---
+    document.getElementById('btnRead').onclick = async () => {
+      const btn = document.getElementById('btnRead');
+      const msg = document.getElementById('statusMsg');
+
+      if (!('NDEFReader' in window)) {
+        alert("NFC非対応ブラウザです。Android Chromeでお試しください。");
+        return;
+      }
+
+      try {
+        const ndef = new NDEFReader();
+        await ndef.scan();
+        btn.innerText = "タッチしてください...";
+        btn.classList.add('is-loading');
+        msg.innerText = "スキャン待機中...";
+
+        ndef.onreading = async (event) => {
+          msg.innerText = "読み取り成功！通信中...";
+          try {
+            const res = await callGas({ action: 'sendPoint', email: myEmail, nfcId: event.serialNumber });
+            // 送信完了アラートに「相手の名前（res.receiver）」を復活させました！
+            alert(`🎉 送信完了！\n${res.receiver}さんへ1コイン贈りました。\nあなたの残り: ${res.remains}枚`);
+            location.reload();
+          } catch(e) {
+            alert("送信エラー: " + e.message);
+            location.reload();
+          }
+        };
+      } catch (error) {
+        alert("NFC起動エラー: " + error);
+        btn.classList.remove('is-loading');
+        btn.innerHTML = "あげる<br>(NFCタッチ)";
+      }
+    };
+  </script>
+</body>
+</html>
