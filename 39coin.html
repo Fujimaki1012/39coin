@@ -6,15 +6,33 @@
   <title>サンキューコイン</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <style>
-    :root { --primary-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); }
-    body { background-color: #f5f7fa; font-family: sans-serif; min-height: 100vh; }
-    .hero { background: var(--primary-gradient); padding: 3rem 1rem 4rem 1rem; color: white; border-radius: 0 0 25px 25px; box-shadow: 0 4px 10px rgba(255, 165, 0, 0.2); }
-    .status-card { background: white; border-radius: 20px; padding: 2rem 1.5rem; margin-top: -40px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
-    .main-btn { height: 120px; font-size: 1.5rem !important; font-weight: bold; border-radius: 20px; box-shadow: 0 8px 15px rgba(255, 165, 0, 0.3); }
-    .custom-input { border-radius: 12px; border: 1px solid #e2e8f0; background-color: #f8fafc; }
+    :root { 
+      --primary-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); 
+      --bg-color: #f0f2f5;
+    }
+    body { background-color: var(--bg-color); font-family: 'Hiragino Kaku Gothic ProN', sans-serif; min-height: 100vh; color: #333; }
+    
+    /* ヘッダーデザイン */
+    .hero { background: var(--primary-gradient); padding: 3.5rem 1rem 5rem 1rem; color: white; border-radius: 0 0 30px 30px; box-shadow: 0 4px 15px rgba(255, 165, 0, 0.25); }
+    .hero .title { font-weight: 800; letter-spacing: 0.05em; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    
+    /* カードデザイン */
+    .status-card { background: white; border-radius: 24px; padding: 2.5rem 1.5rem; margin-top: -50px; box-shadow: 0 12px 30px rgba(0,0,0,0.06); }
+    
+    /* 入力欄とボタンの余白改善 */
+    .instruction-text { line-height: 1.8; color: #555; margin-bottom: 2rem !important; }
+    .custom-input { border-radius: 14px; border: 2px solid #edf2f7; background-color: #f8fafc; transition: all 0.3s; height: 3.5rem; }
+    .custom-input:focus { border-color: #FFA500; background-color: white; box-shadow: 0 0 0 4px rgba(255, 165, 0, 0.1); }
+    
+    .main-btn { height: 120px; font-size: 1.4rem !important; font-weight: 700; border-radius: 20px; box-shadow: 0 8px 20px rgba(255, 165, 0, 0.3); border: none; background: var(--primary-gradient); color: white; transition: transform 0.2s; }
+    .main-btn:active { transform: scale(0.98); }
+    .submit-btn { border-radius: 14px; height: 3.5rem; font-weight: 700; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(255, 165, 0, 0.2); }
+
+    /* モーダルデザイン */
+    .modal-content .box { border-radius: 24px; padding: 2.5rem 2rem; border: none; }
+    .modal-background { backdrop-filter: blur(6px); background-color: rgba(0, 0, 0, 0.5); }
+    
     #app-container { display: none; }
-    .modal-content .box { border-radius: 20px; border: none; }
-    .modal-background { background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); }
   </style>
 </head>
 <body>
@@ -22,13 +40,22 @@
   <div id="login-container">
     <div class="hero has-text-centered">
       <h1 class="title has-text-white is-3 mb-2">🪙 サンキューコイン</h1>
-      <p class="subtitle is-6 has-text-white-ter">初期設定</p>
+      <p class="subtitle is-6 has-text-white-ter">Smart Recognition System</p>
     </div>
-    <div class="container px-4">
+    <div class="container px-5">
       <div class="status-card has-text-centered">
-        <p class="has-text-grey-dark is-size-6 mb-4">メールアドレスを入力して<br>「登録」を押した後にカードをタッチ</p>
-        <input class="input is-medium custom-input mb-4" type="email" id="inputEmail" placeholder="example@daiwa-hi.co.jp">
-        <button class="button is-warning is-fullwidth is-medium has-text-weight-bold" style="border-radius: 12px;" onclick="saveLogin()">カードを登録して開始</button>
+        <h2 class="title is-5 mb-5">初期セットアップ</h2>
+        <p class="instruction-text is-size-6">
+          社内メールアドレスを入力し、<br>
+          <strong>「登録開始」</strong>を押したあとに<br>
+          自分の社員証をスマホにかざしてください。
+        </p>
+        <div class="field mb-5">
+          <div class="control">
+            <input class="input custom-input" type="email" id="inputEmail" placeholder="example@daiwa-hi.co.jp">
+          </div>
+        </div>
+        <button class="button is-warning is-fullwidth submit-btn has-text-weight-bold" onclick="saveLogin()">登録開始</button>
       </div>
     </div>
   </div>
@@ -38,36 +65,41 @@
       <h1 class="title has-text-white is-3 mb-2">🪙 サンキューコイン</h1>
       <button class="button is-small is-light is-outlined mt-2" style="border-radius: 20px;" onclick="logout()">ログアウト</button>
     </div>
-    <div class="container px-4">
+    <div class="container px-5">
       <div class="status-card has-text-centered mb-6">
         <div class="columns is-mobile">
           <div class="column">
-            <p class="heading">あげる残り</p>
-            <p class="title is-2 has-text-danger"><span id="remains">-</span>枚</p>
+            <p class="heading has-text-grey">あげる残り</p>
+            <p class="title is-2 has-text-danger"><span id="remains">-</span><span class="is-size-6"> 枚</span></p>
           </div>
           <div class="column">
-            <p class="heading">もらった累計</p>
-            <p class="title is-2 has-text-success"><span id="received">-</span>枚</p>
+            <p class="heading has-text-grey">もらった累計</p>
+            <p class="title is-2 has-text-success"><span id="received">-</span><span class="is-size-6"> 枚</span></p>
           </div>
         </div>
       </div>
-      <button id="btnRead" class="button is-warning is-fullwidth main-btn mb-4">あげる<br><span class="is-size-6 mt-1">(NFCタッチ)</span></button>
-      <p id="statusMsg" class="has-text-centered has-text-grey is-size-7">※相手のカードにタッチしてください</p>
+      <button id="btnRead" class="button is-warning is-fullwidth main-btn mb-5">
+        コインをあげる<br><span class="is-size-6 mt-1">(NFCタッチ)</span>
+      </button>
+      <p id="statusMsg" class="has-text-centered has-text-grey is-size-7">※相手のカードにゆっくりタッチしてください</p>
     </div>
   </div>
 
   <div id="customModal" class="modal">
     <div class="modal-background" onclick="closeModal()"></div>
-    <div class="modal-content px-4">
-      <div class="box has-text-centered pt-5 pb-5">
+    <div class="modal-content px-5">
+      <div class="box has-text-centered">
         <h2 id="modalTitle" class="title is-4 mt-2 mb-5"></h2>
-        <p id="modalMessage" class="subtitle is-6 mb-5"></p>
-        <button class="button is-warning is-fullwidth has-text-weight-bold" style="border-radius: 12px;" onclick="closeModal()">OK</button>
+        <p id="modalMessage" class="subtitle is-6 mb-6" style="line-height: 1.8;"></p>
+        <button class="button is-warning is-fullwidth is-medium has-text-weight-bold" style="border-radius: 14px;" onclick="closeModal()">OK</button>
       </div>
     </div>
   </div>
 
   <script>
+    // -----------------------------------------------------------------
+    // 79行目：ここにGASのURLを貼り付けてください
+    // -----------------------------------------------------------------
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
 
     function speak(text) {
@@ -100,9 +132,7 @@
     async function saveLogin() {
       const email = document.getElementById('inputEmail').value.trim();
       if(!email) return showModal("エラー", "メールアドレスを入力してください");
-      
-      showModal("カード登録", "そのままスマホに自分の社員証をタッチしてください");
-      
+      showModal("カード登録", "そのままスマホに自分の社員証をタッチしてください。");
       try {
         const ndef = new NDEFReader();
         await ndef.scan();
