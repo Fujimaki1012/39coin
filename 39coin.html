@@ -6,62 +6,17 @@
   <title>サンキューコイン</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <style>
-    :root { 
-      --primary-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); 
-    }
-    body { 
-      background-color: #f5f7fa; 
-      font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif; 
-      min-height: 100vh; 
-    }
-    .hero { 
-      background: var(--primary-gradient); 
-      padding: 3rem 1rem 4rem 1rem; 
-      color: white; 
-      border-radius: 0 0 25px 25px; 
-      box-shadow: 0 4px 10px rgba(255, 165, 0, 0.2);
-    }
-    .status-card { 
-      background: white; 
-      border-radius: 20px; 
-      padding: 2rem 1.5rem; 
-      margin-top: -40px; 
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
-    }
-    .main-btn { 
-      height: 120px; 
-      font-size: 1.5rem !important; 
-      font-weight: bold; 
-      border-radius: 20px; 
-      box-shadow: 0 8px 15px rgba(255, 165, 0, 0.3);
-      transition: transform 0.2s;
-    }
-    .main-btn:active {
-      transform: translateY(2px);
-      box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2);
-    }
-    .custom-input {
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      background-color: #f8fafc;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-    }
-    .custom-input:focus {
-      border-color: #FFA500;
-      box-shadow: 0 0 0 0.125em rgba(255, 165, 0, 0.25);
-    }
+    :root { --primary-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); }
+    body { background-color: #f5f7fa; font-family: sans-serif; min-height: 100vh; }
+    .hero { background: var(--primary-gradient); padding: 3rem 1rem 4rem 1rem; color: white; border-radius: 0 0 25px 25px; box-shadow: 0 4px 10px rgba(255, 165, 0, 0.2); }
+    .status-card { background: white; border-radius: 20px; padding: 2rem 1.5rem; margin-top: -40px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+    .main-btn { height: 120px; font-size: 1.5rem !important; font-weight: bold; border-radius: 20px; box-shadow: 0 8px 15px rgba(255, 165, 0, 0.3); transition: transform 0.2s; }
+    .main-btn:active { transform: translateY(2px); box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2); }
+    .custom-input { border-radius: 12px; border: 1px solid #e2e8f0; background-color: #f8fafc; }
+    .custom-input:focus { border-color: #FFA500; box-shadow: 0 0 0 0.125em rgba(255, 165, 0, 0.25); }
     #app-container { display: none; }
-    
-    /* モーダル用の追加スタイル */
-    .modal-content .box {
-      border-radius: 20px;
-      border: none;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-    }
-    .modal-background {
-      background-color: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(3px); /* 背景を少しぼかすオシャレ効果 */
-    }
+    .modal-content .box { border-radius: 20px; border: none; box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+    .modal-background { background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); }
   </style>
 </head>
 <body>
@@ -73,17 +28,13 @@
     </div>
     <div class="container px-4">
       <div class="status-card has-text-centered">
-        <p class="has-text-grey-dark is-size-6 mb-4">
-          スプレッドシートに登録した<br>メールアドレスを入力してください
-        </p>
+        <p class="has-text-grey-dark is-size-6 mb-4">登録したメールアドレスを入力</p>
         <div class="field">
           <div class="control">
             <input class="input is-medium custom-input" type="email" id="inputEmail" placeholder="例: taro@example.com">
           </div>
         </div>
-        <button class="button is-warning is-fullwidth is-medium mt-5 has-text-weight-bold" style="border-radius: 12px;" onclick="saveLogin()">
-          はじめる
-        </button>
+        <button class="button is-warning is-fullwidth is-medium mt-5 has-text-weight-bold" style="border-radius: 12px;" onclick="saveLogin()">はじめる</button>
       </div>
     </div>
   </div>
@@ -93,7 +44,6 @@
       <h1 class="title has-text-white is-3 mb-2">🪙 サンキューコイン</h1>
       <button class="button is-small is-light is-outlined mt-2" style="border-radius: 20px;" onclick="logout()">ログアウト</button>
     </div>
-
     <div class="container px-4">
       <div class="status-card has-text-centered mb-6">
         <p class="subtitle is-6 mb-4 has-text-grey">現在のステータス</p>
@@ -108,10 +58,7 @@
           </div>
         </div>
       </div>
-
-      <button id="btnRead" class="button is-warning is-fullwidth main-btn mb-4">
-        あげる<br><span class="is-size-6 mt-1">(NFCタッチ)</span>
-      </button>
+      <button id="btnRead" class="button is-warning is-fullwidth main-btn mb-4">あげる<br><span class="is-size-6 mt-1">(NFCタッチ)</span></button>
       <p id="statusMsg" class="has-text-centered has-text-grey is-size-7">※相手の社員証にピタッとタッチしてください</p>
     </div>
   </div>
@@ -120,119 +67,93 @@
     <div class="modal-background" onclick="closeModal()"></div>
     <div class="modal-content px-4">
       <div class="box has-text-centered pt-5 pb-5">
-        <h2 id="modalTitle" class="title is-4 mb-4 has-text-grey-dark">タイトル</h2>
+        <h2 id="modalTitle" class="title is-4 mt-2 mb-5 has-text-grey-dark">タイトル</h2>
         <p id="modalMessage" class="subtitle is-6 has-text-grey mb-5" style="line-height: 1.6;">メッセージ</p>
-        <button class="button is-warning is-medium is-fullwidth has-text-weight-bold" style="border-radius: 12px;" onclick="closeModal()">
-          OK
-        </button>
+        <button class="button is-warning is-medium is-fullwidth has-text-weight-bold" style="border-radius: 12px;" onclick="closeModal()">OK</button>
       </div>
     </div>
   </div>
 
   <script>
-    // ！！！！ここにGASでデプロイしたURLを貼り付けてください！！！！
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
+
+    // --- 音声合成エンジン ---
+    function speakThankYou() {
+      const uttr = new SpeechSynthesisUtterance("サンキュー！");
+      uttr.lang = "ja-JP";
+      uttr.rate = 1.2;  // 速さ (少し速めで軽快に)
+      uttr.pitch = 1.5; // 高さ (少し高めで明るく)
+      window.speechSynthesis.speak(uttr);
+    }
 
     // --- カスタムモーダル制御 ---
     let modalCallback = null;
-
-    function showModal(title, message, callback = null) {
+    function showModal(title, message, callback = null, sound = false) {
       document.getElementById('modalTitle').innerHTML = title;
       document.getElementById('modalMessage').innerHTML = message.replace(/\n/g, '<br>');
       document.getElementById('customModal').classList.add('is-active');
       modalCallback = callback;
+      if (sound) speakThankYou(); // 音声を鳴らす
     }
 
     function closeModal() {
       document.getElementById('customModal').classList.remove('is-active');
-      if (modalCallback) {
-        modalCallback(); // OKを押した後の処理（画面リロードなど）を実行
-        modalCallback = null;
-      }
+      if (modalCallback) { modalCallback(); modalCallback = null; }
     }
 
-    // --- ログイン処理 ---
+    // --- ログイン/データ処理 (略) ---
     const myEmail = localStorage.getItem('userEmail');
-
     if (myEmail) {
       document.getElementById('login-container').style.display = 'none';
       document.getElementById('app-container').style.display = 'block';
       loadUserData(myEmail);
     }
-
     function saveLogin() {
       const email = document.getElementById('inputEmail').value.trim();
       if(!email) return showModal("お知らせ", "メールアドレスを入力してください");
       localStorage.setItem('userEmail', email);
       location.reload();
     }
+    function logout() { localStorage.removeItem('userEmail'); location.reload(); }
 
-    function logout() {
-      localStorage.removeItem('userEmail');
-      location.reload();
-    }
-
-    // --- GASとの通信関数 ---
     async function callGas(params) {
       const url = new URL(GAS_URL);
       Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-      
-      try {
-        const response = await fetch(url.toString(), { redirect: "follow", method: "GET" });
-        const data = await response.json();
-        if(data.error) throw new Error(data.error);
-        return data;
-      } catch (error) {
-        throw error;
-      }
+      const response = await fetch(url.toString(), { redirect: "follow", method: "GET" });
+      const data = await response.json();
+      if(data.error) throw new Error(data.error);
+      return data;
     }
 
-    // --- データ読み込み ---
     async function loadUserData(email) {
       try {
         const data = await callGas({ action: 'getUserData', email: email });
         document.getElementById('remains').innerText = data.remains;
         document.getElementById('received').innerText = data.received;
-      } catch(e) {
-        showModal("エラー", e.message, logout); // エラー時はモーダル表示後にログアウト
-      }
+      } catch(e) { showModal("エラー", e.message, logout); }
     }
 
-    // --- NFC読み取り処理 ---
+    // --- NFC処理 ---
     document.getElementById('btnRead').onclick = async () => {
       const btn = document.getElementById('btnRead');
-      const msg = document.getElementById('statusMsg');
-
       if (!('NDEFReader' in window)) {
-        showModal("お知らせ", "NFC非対応のブラウザです。<br>AndroidのChromeでお試しください。");
+        showModal("お知らせ", "NFC非対応ブラウザです。");
         return;
       }
-
       try {
         const ndef = new NDEFReader();
         await ndef.scan();
-        btn.innerHTML = "タッチしてください...<br><span class='is-size-6 mt-1'>(スキャン中)</span>";
         btn.classList.add('is-loading');
-        msg.innerText = "スキャン待機中...";
-
         ndef.onreading = async (event) => {
-          msg.innerText = "読み取り成功！通信中...";
           try {
             const res = await callGas({ action: 'sendPoint', email: myEmail, nfcId: event.serialNumber });
-            // 送信成功時のオシャレなモーダル表示
-            showModal(
-              "🎉 送信完了！", 
-              `<span class="has-text-weight-bold is-size-5">${res.receiver}</span> さんへ<br>1コイン贈りました！<br><br><span class="is-size-7">あなたの残り: ${res.remains}枚</span>`, 
-              () => location.reload()
-            );
-          } catch(e) {
-            showModal("送信エラー", e.message, () => location.reload());
-          }
+            // 送信完了時に sound: true を渡して鳴らす
+            showModal("🎉 送信完了！", `${res.receiver} さんへ<br>1コイン贈りました！`, () => location.reload(), true);
+          } catch(e) { showModal("送信エラー", e.message, () => location.reload()); }
         };
       } catch (error) {
         showModal("エラー", "NFCの起動に失敗しました。");
         btn.classList.remove('is-loading');
-        btn.innerHTML = "あげる<br><span class='is-size-6 mt-1'>(NFCタッチ)</span>";
       }
     };
   </script>
