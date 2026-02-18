@@ -33,9 +33,18 @@
     .hero .title {
       font-weight: 800;
       letter-spacing: 0.05em;
+      margin-bottom: 0.2rem !important; /* バージョンとの間隔を詰める */
     }
 
-    /* カード */
+    /* バージョン表記のスタイル */
+    .version-tag {
+      font-size: 0.75rem;
+      opacity: 0.85;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+
+    /* メインカード */
     .status-card {
       background: white;
       border-radius: 24px;
@@ -111,7 +120,8 @@
 
 <div id="login-container">
   <div class="hero has-text-centered">
-    <h1 class="title has-text-white is-3 mb-2">🪙 サンキューコイン</h1>
+    <h1 class="title has-text-white is-3">🪙 サンキューコイン</h1>
+    <div class="version-tag has-text-white-bis">Ver. 1.0.0</div>
   </div>
   <div class="container px-5">
     <div class="status-card has-text-centered">
@@ -139,8 +149,9 @@
 
 <div id="app-container">
   <div class="hero has-text-centered">
-    <h1 class="title has-text-white is-4 mb-1">🪙 サンキューコイン</h1>
-    <p id="myEmailDisp" class="is-size-7 has-text-white-bis"></p>
+    <h1 class="title has-text-white is-4">🪙 サンキューコイン</h1>
+    <div class="version-tag has-text-white-bis opacity-75">Ver. 1.0.0</div>
+    <p id="myEmailDisp" class="is-size-7 has-text-white-bis mt-2" style="letter-spacing: 0.05em;"></p>
   </div>
   <div class="container px-5">
     <div class="status-card has-text-centered mb-5">
@@ -181,7 +192,8 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec"; // ★ここにURLを貼る
+  // ★重要：デプロイしたURLをここに貼り付け
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
 
   function speak(text) {
     const uttr = new SpeechSynthesisUtterance(text);
@@ -210,7 +222,11 @@
       document.getElementById('loginBtn').innerText = "カードを待機中...";
       ndef.onreading = async (event) => {
         const res = await callGas({ action: 'getUserData', email: email, nfcId: event.serialNumber });
-        if(res.error) { alert(res.error); document.getElementById('loginBtn').innerText = "社員証をタッチしてログイン"; return; }
+        if(res.error) { 
+          alert(res.error); 
+          document.getElementById('loginBtn').innerText = "社員証をタッチしてログイン"; 
+          return; 
+        }
         localStorage.setItem('userEmail', email);
         localStorage.setItem('userNfc', event.serialNumber);
         location.reload();
@@ -236,7 +252,7 @@
     } catch(e) { alert("NFC非対応です"); }
   }
 
-  // USBスキャン
+  // USBスキャン（Enterキー）
   document.getElementById('regNfcInput').addEventListener('keypress', async (e) => {
     if (e.key === 'Enter') {
       const email = document.getElementById('loginEmail').value.trim();
@@ -257,9 +273,17 @@
       await ndef.scan();
       document.getElementById('btnSend').innerText = "相手のカードを待機中...";
       ndef.onreading = async (event) => {
-        const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), nfcId: event.serialNumber, message: msg });
-        if(res.error) { alert(res.error); location.reload(); }
-        else {
+        const res = await callGas({ 
+          action: 'sendPoint', 
+          email: localStorage.getItem('userEmail'), 
+          nfcId: event.serialNumber, 
+          message: msg 
+        });
+        
+        if(res.error) { 
+          alert(res.error); 
+          location.reload(); 
+        } else {
           speak("サンキュー");
           let body = `<p><strong>${res.receiver}</strong> さんに<br>1コイン送りました！</p>`;
           if (msg) body += `<div class="modal-quote">「${msg}」</div>`;
@@ -285,6 +309,7 @@
       document.getElementById('login-container').style.display = 'none';
       document.getElementById('app-container').style.display = 'block';
       document.getElementById('myEmailDisp').innerText = email;
+      
       const res = await callGas({ action: 'getUserData', email: email, nfcId: nfc });
       if(!res.error) {
         document.getElementById('remains').innerText = res.remains;
@@ -295,4 +320,3 @@
 </script>
 </body>
 </html>
-
