@@ -11,27 +11,14 @@
       --bg-color: #f0f2f5;
     }
     body { background-color: var(--bg-color); font-family: 'Hiragino Kaku Gothic ProN', sans-serif; min-height: 100vh; color: #333; }
-    
-    /* ヘッダーデザイン */
     .hero { background: var(--primary-gradient); padding: 3.5rem 1rem 5rem 1rem; color: white; border-radius: 0 0 30px 30px; box-shadow: 0 4px 15px rgba(255, 165, 0, 0.25); }
-    .hero .title { font-weight: 800; letter-spacing: 0.05em; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    
-    /* カードデザイン */
     .status-card { background: white; border-radius: 24px; padding: 2.5rem 1.5rem; margin-top: -50px; box-shadow: 0 12px 30px rgba(0,0,0,0.06); }
-    
-    /* 入力欄とボタンの余白改善 */
     .instruction-text { line-height: 1.8; color: #555; margin-bottom: 2rem !important; }
-    .custom-input { border-radius: 14px; border: 2px solid #edf2f7; background-color: #f8fafc; transition: all 0.3s; height: 3.5rem; }
-    .custom-input:focus { border-color: #FFA500; background-color: white; box-shadow: 0 0 0 4px rgba(255, 165, 0, 0.1); }
-    
-    .main-btn { height: 120px; font-size: 1.4rem !important; font-weight: 700; border-radius: 20px; box-shadow: 0 8px 20px rgba(255, 165, 0, 0.3); border: none; background: var(--primary-gradient); color: white; transition: transform 0.2s; }
-    .main-btn:active { transform: scale(0.98); }
-    .submit-btn { border-radius: 14px; height: 3.5rem; font-weight: 700; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(255, 165, 0, 0.2); }
-
-    /* モーダルデザイン */
+    .custom-input { border-radius: 14px; border: 2px solid #edf2f7; background-color: #f8fafc; height: 3.5rem; }
+    .main-btn { height: 120px; font-size: 1.4rem !important; font-weight: 700; border-radius: 20px; box-shadow: 0 8px 20px rgba(255, 165, 0, 0.3); border: none; background: var(--primary-gradient); color: white; }
+    .submit-btn { border-radius: 14px; height: 3.5rem; font-weight: 700; }
     .modal-content .box { border-radius: 24px; padding: 2.5rem 2rem; border: none; }
     .modal-background { backdrop-filter: blur(6px); background-color: rgba(0, 0, 0, 0.5); }
-    
     #app-container { display: none; }
   </style>
 </head>
@@ -47,7 +34,7 @@
         <h2 class="title is-5 mb-5">初期セットアップ</h2>
         <p class="instruction-text is-size-6">
           社内メールアドレスを入力し、<br>
-          <strong>「登録開始」</strong>を押したあとに<br>
+          <strong>「認証開始」</strong>を押したあとに<br>
           自分の社員証をスマホにかざしてください。
         </p>
         <div class="field mb-5">
@@ -55,7 +42,7 @@
             <input class="input custom-input" type="email" id="inputEmail" placeholder="example@daiwa-hi.co.jp">
           </div>
         </div>
-        <button class="button is-warning is-fullwidth submit-btn has-text-weight-bold" onclick="saveLogin()">登録開始</button>
+        <button class="button is-warning is-fullwidth submit-btn has-text-weight-bold" onclick="saveLogin()">認証開始</button>
       </div>
     </div>
   </div>
@@ -98,12 +85,12 @@
 
   <script>
     // -----------------------------------------------------------------
-    // 79行目：ここにGASのURLを貼り付けてください
+    // 84行目：ここにGASのURLを貼り付けてください
     // -----------------------------------------------------------------
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
 
-    function speak(text) {
-      const uttr = new SpeechSynthesisUtterance(text);
+    function speakThankYou() {
+      const uttr = new SpeechSynthesisUtterance("サンキュー！");
       uttr.lang = "ja-JP"; uttr.rate = 1.2; uttr.pitch = 1.5;
       window.speechSynthesis.speak(uttr);
     }
@@ -114,7 +101,7 @@
       document.getElementById('modalMessage').innerHTML = message.replace(/\n/g, '<br>');
       document.getElementById('customModal').classList.add('is-active');
       modalCallback = callback;
-      if (sound) speak("サンキュー！");
+      if (sound) speakThankYou();
     }
 
     function closeModal() {
@@ -123,25 +110,29 @@
     }
 
     const myEmail = localStorage.getItem('userEmail');
-    if (myEmail) {
+    const myNfc = localStorage.getItem('userNfc');
+
+    if (myEmail && myNfc) {
       document.getElementById('login-container').style.display = 'none';
       document.getElementById('app-container').style.display = 'block';
-      loadUserData(myEmail);
+      loadUserData(myEmail, myNfc);
     }
 
     async function saveLogin() {
       const email = document.getElementById('inputEmail').value.trim();
       if(!email) return showModal("エラー", "メールアドレスを入力してください");
-      showModal("カード登録", "そのままスマホに自分の社員証をタッチしてください。");
+      showModal("認証中", "そのままご自身の社員証をタッチしてください");
       try {
         const ndef = new NDEFReader();
         await ndef.scan();
         ndef.onreading = async (event) => {
+          const nfcId = event.serialNumber;
           try {
-            await callGas({ action: 'registerUser', email: email, nfcId: event.serialNumber });
+            await callGas({ action: 'getUserData', email: email, nfcId: nfcId });
             localStorage.setItem('userEmail', email);
-            showModal("完了", "カードの登録に成功しました！", () => location.reload(), true);
-          } catch(e) { showModal("登録失敗", e.message); }
+            localStorage.setItem('userNfc', nfcId);
+            showModal("完了", "ログインしました！", () => location.reload());
+          } catch(e) { showModal("認証失敗", e.message); }
         };
       } catch (e) { showModal("エラー", "NFCを起動できません"); }
     }
@@ -155,15 +146,15 @@
       return data;
     }
 
-    async function loadUserData(email) {
+    async function loadUserData(email, nfcId) {
       try {
-        const data = await callGas({ action: 'getUserData', email: email });
+        const data = await callGas({ action: 'getUserData', email: email, nfcId: nfcId });
         document.getElementById('remains').innerText = data.remains;
         document.getElementById('received').innerText = data.received;
-      } catch(e) { showModal("エラー", e.message, logout); }
+      } catch(e) { showModal("認証エラー", e.message, logout); }
     }
 
-    function logout() { localStorage.removeItem('userEmail'); location.reload(); }
+    function logout() { localStorage.clear(); location.reload(); }
 
     document.getElementById('btnRead').onclick = async () => {
       const btn = document.getElementById('btnRead');
