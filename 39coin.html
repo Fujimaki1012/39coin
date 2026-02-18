@@ -11,7 +11,8 @@
     .hero { background: var(--primary-gradient); padding: 3rem 1rem 4rem 1rem; color: white; border-radius: 0 0 35px 35px; }
     .status-card { background: white; border-radius: 24px; padding: 1.5rem; margin-top: -40px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
     .custom-input { border-radius: 12px; border: 2px solid #edf2f7; background-color: #f8fafc; }
-    .main-btn { height: 100px; font-size: 1.2rem; font-weight: 800; border-radius: 18px; background: var(--primary-gradient); color: white; border: none; width: 100%; }
+    .main-btn { height: 100px; font-size: 1.2rem; font-weight: 800; border-radius: 18px; background: var(--primary-gradient); color: white; border: none; width: 100%; transition: opacity 0.3s; }
+    .main-btn:disabled { opacity: 0.6; pointer-events: none; }
     .test-reg-box { margin-top: 2rem; padding: 1.5rem; border: 2px dashed #cbd5e1; border-radius: 18px; background: #fff; }
     .modal-quote { background: #fff9eb; padding: 1rem; border-radius: 10px; border-left: 5px solid var(--accent-color); margin-top: 1rem; text-align: left; }
     #app-container { display: none; }
@@ -22,7 +23,7 @@
 <div id="login-container">
   <div class="hero has-text-centered">
     <h1 class="title has-text-white is-3">🪙 サンキューコイン</h1>
-    <p class="is-size-7">Ver. 1.0.2</p>
+    <p class="is-size-7">Ver. 1.0.3</p>
   </div>
   <div class="container px-5">
     <div class="status-card has-text-centered">
@@ -71,36 +72,61 @@
   }
   function closeModal() { document.getElementById('customModal').classList.remove('is-active'); if(window.modalCb) window.modalCb(); }
 
+  // ボタンの状態を一括管理する関数
+  function setBtnState(id, text, disabled) {
+    const btn = document.getElementById(id);
+    btn.innerText = text;
+    btn.disabled = disabled;
+  }
+
   async function doLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     if(!email) return alert("アドレスを入力");
-    const ndef = new NDEFReader();
-    await ndef.scan();
-    ndef.onreading = async (event) => {
-      try {
-        const res = await callGas({ action: 'getUserData', email: email, nfcId: event.serialNumber });
-        if(res.error) return alert(res.error);
-        localStorage.setItem('userEmail', email);
-        localStorage.setItem('userNfc', event.serialNumber);
-        location.reload();
-      } catch(e) { alert("失敗"); }
-    };
+    try {
+      const ndef = new NDEFReader();
+      await ndef.scan();
+      setBtnState('loginBtn', 'カードをタッチしてください...', true);
+      ndef.onreading = async (event) => {
+        setBtnState('loginBtn', '照合中...', true);
+        try {
+          const res = await callGas({ action: 'getUserData', email: email, nfcId: event.serialNumber });
+          if(res.error) {
+            alert(res.error);
+            setBtnState('loginBtn', '社員証でログイン', false);
+            return;
+          }
+          localStorage.setItem('userEmail', email);
+          localStorage.setItem('userNfc', event.serialNumber);
+          location.reload();
+        } catch(e) { 
+          alert("通信エラー"); 
+          setBtnState('loginBtn', '社員証でログイン', false);
+        }
+      };
+    } catch(e) { alert("NFCエラー: Chromeを使用してください"); }
   }
 
   async function doRegister() {
     const email = document.getElementById('loginEmail').value.trim();
     if(!email) return alert("アドレスを入力");
-    const ndef = new NDEFReader();
-    await ndef.scan();
-    ndef.onreading = async (event) => {
-      const res = await callGas({ action: 'register', email: email, nfcId: event.serialNumber });
-      alert(res.message || res.error);
-    };
+    try {
+      const ndef = new NDEFReader();
+      await ndef.scan();
+      setBtnState('regBtn', 'カードをかざしてください...', true);
+      ndef.onreading = async (event) => {
+        setBtnState('regBtn', '登録中...', true);
+        const res = await callGas({ action: 'register', email: email, nfcId: event.serialNumber });
+        alert(res.message || res.error);
+        setBtnState('regBtn', 'スマホのNFCで登録', false);
+      };
+    } catch(e) { alert("NFC非対応"); }
   }
 
   document.getElementById('regNfcInput').onkeypress = async (e) => {
     if (e.key === 'Enter') {
-      const res = await callGas({ action: 'register', email: document.getElementById('loginEmail').value, nfcId: e.target.value });
+      const email = document.getElementById('loginEmail').value;
+      if(!email) return alert("アドレス入力");
+      const res = await callGas({ action: 'register', email: email, nfcId: e.target.value });
       alert(res.message || res.error);
       e.target.value = "";
     }
@@ -108,17 +134,28 @@
 
   document.getElementById('btnSend').onclick = async () => {
     const msg = document.getElementById('coinMessage').value;
-    const ndef = new NDEFReader();
-    await ndef.scan();
-    ndef.onreading = async (event) => {
-      const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), nfcId: event.serialNumber, message: msg });
-      if(res.error) alert(res.error);
-      else {
-        const uttr = new SpeechSynthesisUtterance("サンキュー");
-        window.speechSynthesis.speak(uttr);
-        showModal("🎉 完了", `${res.receiver}さんに送りました<div class="modal-quote">${msg}</div>`, () => location.reload());
-      }
-    };
+    try {
+      const ndef = new NDEFReader();
+      await ndef.scan();
+      setBtnState('btnSend', '相手のカードを待機中...', true);
+      ndef.onreading = async (event) => {
+        setBtnState('btnSend', '送信中...', true);
+        try {
+          const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), nfcId: event.serialNumber, message: msg });
+          if(res.error) {
+            alert(res.error);
+            setBtnState('btnSend', 'コインをあげる', false);
+          } else {
+            const uttr = new SpeechSynthesisUtterance("サンキュー");
+            window.speechSynthesis.speak(uttr);
+            showModal("🎉 完了", `${res.receiver}さんに送りました<div class="modal-quote">${msg}</div>`, () => location.reload());
+          }
+        } catch(e) {
+          alert("通信失敗");
+          setBtnState('btnSend', 'コインをあげる', false);
+        }
+      };
+    } catch(e) { alert("NFC失敗"); }
   };
 
   function logout() { localStorage.clear(); location.reload(); }
@@ -129,9 +166,11 @@
       document.getElementById('login-container').style.display = 'none';
       document.getElementById('app-container').style.display = 'block';
       document.getElementById('myEmailDisp').innerText = email;
-      const res = await callGas({ action: 'getUserData', email, nfcId: nfc });
-      document.getElementById('remains').innerText = res.remains;
-      document.getElementById('received').innerText = res.received;
+      try {
+        const res = await callGas({ action: 'getUserData', email, nfcId: nfc });
+        document.getElementById('remains').innerText = res.remains;
+        document.getElementById('received').innerText = res.received;
+      } catch(e) {}
     }
   };
 </script>
