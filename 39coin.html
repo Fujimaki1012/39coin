@@ -6,170 +6,340 @@
   <title>サンキューコイン</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <style>
-    :root { 
-      --primary-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); 
+    :root {
+      --primary-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
       --bg-color: #f0f2f5;
+      --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      --accent-color: #FFA500;
     }
-    body { background-color: var(--bg-color); font-family: 'Hiragino Kaku Gothic ProN', sans-serif; min-height: 100vh; color: #333; }
-    .hero { background: var(--primary-gradient); padding: 3.5rem 1rem 5rem 1rem; color: white; border-radius: 0 0 30px 30px; box-shadow: 0 4px 15px rgba(255, 165, 0, 0.25); }
-    .status-card { background: white; border-radius: 24px; padding: 2.5rem 1.5rem; margin-top: -50px; box-shadow: 0 12px 30px rgba(0,0,0,0.06); }
-    .instruction-text { line-height: 1.8; color: #555; margin-bottom: 2rem !important; }
-    .custom-input { border-radius: 14px; border: 2px solid #edf2f7; background-color: #f8fafc; height: 3.5rem; }
-    .main-btn { height: 120px; font-size: 1.4rem !important; font-weight: 700; border-radius: 20px; box-shadow: 0 8px 20px rgba(255, 165, 0, 0.3); border: none; background: var(--primary-gradient); color: white; }
-    .submit-btn { border-radius: 14px; height: 3.5rem; font-weight: 700; }
-    .modal-content .box { border-radius: 24px; padding: 2.5rem 2rem; border: none; }
-    .modal-background { backdrop-filter: blur(6px); background-color: rgba(0, 0, 0, 0.5); }
-    #app-container { display: none; }
+
+    body {
+      background-color: var(--bg-color);
+      font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', sans-serif;
+      min-height: 100vh;
+      color: #333;
+      padding-bottom: 2rem;
+    }
+
+    /* ヘッダーデザイン */
+    .hero {
+      background: var(--primary-gradient);
+      padding: 3.5rem 1rem 5rem 1rem;
+      color: white;
+      border-radius: 0 0 35px 35px;
+      box-shadow: 0 4px 15px rgba(255, 165, 0, 0.2);
+    }
+
+    .hero .title {
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+
+    /* メインカード */
+    .status-card {
+      background: white;
+      border-radius: 24px;
+      padding: 2rem 1.5rem;
+      margin-top: -50px;
+      box-shadow: var(--card-shadow);
+    }
+
+    /* 入力フォームデザイン */
+    .field-label-custom {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #666;
+      margin-bottom: 0.5rem;
+      display: block;
+      text-align: left;
+    }
+
+    .custom-input {
+      border-radius: 14px;
+      border: 2px solid #edf2f7;
+      background-color: #f8fafc;
+      transition: all 0.3s ease;
+      box-shadow: none;
+    }
+
+    .custom-input:focus {
+      border-color: var(--accent-color);
+      background-color: #fff;
+      box-shadow: 0 0 0 4px rgba(255, 165, 0, 0.1);
+    }
+
+    /* ボタンデザイン */
+    .main-btn {
+      height: 110px;
+      font-size: 1.3rem !important;
+      font-weight: 800;
+      border-radius: 20px;
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      box-shadow: 0 8px 20px rgba(255, 165, 0, 0.3);
+      transition: transform 0.2s;
+    }
+
+    .main-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* テスト用登録エリア */
+    .test-reg-box {
+      margin-top: 3rem;
+      padding: 1.8rem;
+      border: 2px dashed #cbd5e1;
+      border-radius: 20px;
+      background: #ffffff;
+    }
+
+    .reg-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    /* モーダル内のメッセージ引用デザイン */
+    .modal-quote {
+      background: #fff9eb;
+      padding: 1rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      color: #555;
+      border-left: 5px solid var(--accent-color);
+      text-align: left;
+      margin-top: 1rem;
+      line-height: 1.6;
+    }
+
+    #app-container {
+      display: none;
+    }
+
+    .modal-card-custom {
+      border-radius: 24px !important;
+      overflow: hidden;
+    }
+
+    .logout-link {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      text-decoration: underline;
+      margin-top: 2rem;
+      display: block;
+    }
   </style>
 </head>
 <body>
 
-  <div id="login-container">
-    <div class="hero has-text-centered">
-      <h1 class="title has-text-white is-3 mb-2">🪙 サンキューコイン</h1>
-      <p class="subtitle is-6 has-text-white-ter">Smart Recognition System</p>
-    </div>
-    <div class="container px-5">
-      <div class="status-card has-text-centered">
-        <h2 class="title is-5 mb-5">初期セットアップ</h2>
-        <p class="instruction-text is-size-6">
-          社内メールアドレスを入力し、<br>
-          <strong>「認証開始」</strong>を押したあとに<br>
-          自分の社員証をスマホにかざしてください。
-        </p>
-        <div class="field mb-5">
-          <div class="control">
-            <input class="input custom-input" type="email" id="inputEmail" placeholder="example@daiwa-hi.co.jp">
-          </div>
-        </div>
-        <button class="button is-warning is-fullwidth submit-btn has-text-weight-bold" onclick="saveLogin()">認証開始</button>
-      </div>
-    </div>
+<div id="login-container">
+  <div class="hero has-text-centered">
+    <h1 class="title has-text-white is-3 mb-2">🪙 サンキューコイン</h1>
+    <p class="subtitle is-6 has-text-white-ter">Smart Recognition System</p>
   </div>
-
-  <div id="app-container">
-    <div class="hero has-text-centered">
-      <h1 class="title has-text-white is-3 mb-2">🪙 サンキューコイン</h1>
-      <button class="button is-small is-light is-outlined mt-2" style="border-radius: 20px;" onclick="logout()">ログアウト</button>
-    </div>
-    <div class="container px-5">
-      <div class="status-card has-text-centered mb-6">
-        <div class="columns is-mobile">
-          <div class="column">
-            <p class="heading has-text-grey">あげる残り</p>
-            <p class="title is-2 has-text-danger"><span id="remains">-</span><span class="is-size-6"> 枚</span></p>
-          </div>
-          <div class="column">
-            <p class="heading has-text-grey">もらった累計</p>
-            <p class="title is-2 has-text-success"><span id="received">-</span><span class="is-size-6"> 枚</span></p>
-          </div>
-        </div>
+  <div class="container px-5">
+    <div class="status-card has-text-centered">
+      <h2 class="title is-5 mb-5">ログイン</h2>
+      <div class="field mb-4">
+        <label class="field-label-custom">メールアドレス</label>
+        <input class="input custom-input" type="email" id="loginEmail" placeholder="example@daiwa-hi.co.jp">
       </div>
-      <button id="btnRead" class="button is-warning is-fullwidth main-btn mb-5">
-        コインをあげる<br><span class="is-size-6 mt-1">(NFCタッチ)</span>
+      <button class="button is-warning is-fullwidth has-text-weight-bold" style="height: 3.8rem; border-radius: 14px;" onclick="doLogin()">
+        社員証をタッチしてログイン
       </button>
-      <p id="statusMsg" class="has-text-centered has-text-grey is-size-7">※相手のカードにゆっくりタッチしてください</p>
-    </div>
-  </div>
-
-  <div id="customModal" class="modal">
-    <div class="modal-background" onclick="closeModal()"></div>
-    <div class="modal-content px-5">
-      <div class="box has-text-centered">
-        <h2 id="modalTitle" class="title is-4 mt-2 mb-5"></h2>
-        <p id="modalMessage" class="subtitle is-6 mb-6" style="line-height: 1.8;"></p>
-        <button class="button is-warning is-fullwidth is-medium has-text-weight-bold" style="border-radius: 14px;" onclick="closeModal()">OK</button>
+      
+      <div class="test-reg-box">
+        <p class="reg-title">【開発用テスト】NFC未登録の方</p>
+        <div class="field mb-3">
+          <input class="input is-small custom-input" type="text" id="regNfcInput" placeholder="USBスキャナでピッ (Enter)">
+        </div>
+        <button class="button is-small is-light is-fullwidth has-text-weight-bold" style="border-radius: 10px;" onclick="doRegister()">
+          スマホのNFCで登録
+        </button>
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-    // -----------------------------------------------------------------
-    // 84行目：ここにGASのURLを貼り付けてください
-    // -----------------------------------------------------------------
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
+<div id="app-container">
+  <div class="hero has-text-centered">
+    <h1 class="title has-text-white is-4 mb-1">🪙 サンキューコイン</h1>
+    <p id="myEmailDisp" class="is-size-7 has-text-white-bis opacity-75"></p>
+  </div>
+  <div class="container px-5">
+    <div class="status-card has-text-centered mb-5">
+      <div class="columns is-mobile">
+        <div class="column">
+          <p class="heading has-text-grey">あげる残り</p>
+          <p class="title is-2 has-text-danger" id="remains">-</p>
+        </div>
+        <div class="column">
+          <p class="heading has-text-grey">もらった累計</p>
+          <p class="title is-2 has-text-success" id="received">-</p>
+        </div>
+      </div>
+    </div>
 
-    function speakThankYou() {
-      const uttr = new SpeechSynthesisUtterance("サンキュー！");
-      uttr.lang = "ja-JP"; uttr.rate = 1.2; uttr.pitch = 1.5;
-      window.speechSynthesis.speak(uttr);
+    <div class="field mb-5">
+      <label class="field-label-custom">感謝のメッセージ</label>
+      <textarea id="coinMessage" class="textarea custom-input" placeholder="「いつも助かってます！」など" rows="3"></textarea>
+    </div>
+
+    <button id="btnSend" class="button is-warning is-fullwidth main-btn">
+      コインをあげる<br>
+      <span class="is-size-7 mt-2" style="font-weight: 400;">(相手のカードにタッチ)</span>
+    </button>
+    
+    <a href="#" class="logout-link has-text-centered" onclick="logout()">ログアウト</a>
+  </div>
+</div>
+
+<div id="customModal" class="modal">
+  <div class="modal-background" onclick="closeModal()"></div>
+  <div class="modal-content px-5">
+    <div class="box has-text-centered" style="border-radius: 24px;">
+      <div id="modalMsgContent"></div>
+      <button class="button is-warning is-fullwidth has-text-weight-bold mt-5" style="height: 3.5rem; border-radius: 14px;" onclick="closeModal()">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ★重要：デプロイしたURLをここに貼り付け
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
+
+  // モーダル表示関数
+  function showCustomModal(title, htmlBody, callback = null) {
+    const content = document.getElementById('modalMsgContent');
+    content.innerHTML = `
+      <h3 class="title is-4 mb-4">${title}</h3>
+      <div class="is-size-6">${htmlBody}</div>
+    `;
+    document.getElementById('customModal').classList.add('is-active');
+    window.modalCloseCallback = callback;
+  }
+
+  function closeModal() {
+    document.getElementById('customModal').classList.remove('is-active');
+    if (window.modalCloseCallback) {
+      window.modalCloseCallback();
+      window.modalCloseCallback = null;
     }
+  }
 
-    let modalCallback = null;
-    function showModal(title, message, callback = null, sound = false) {
-      document.getElementById('modalTitle').innerText = title;
-      document.getElementById('modalMessage').innerHTML = message.replace(/\n/g, '<br>');
-      document.getElementById('customModal').classList.add('is-active');
-      modalCallback = callback;
-      if (sound) speakThankYou();
+  // ログイン処理
+  async function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    if(!email) return alert("メールアドレスを入力してください");
+    
+    try {
+      const ndef = new NDEFReader();
+      await ndef.scan();
+      alert("ご自身の社員証をスマホにかざしてください");
+      ndef.onreading = async (event) => {
+        const res = await callGas({ action: 'getUserData', email: email, nfcId: event.serialNumber });
+        if(res.error) return alert(res.error);
+        
+        localStorage.setItem('userEmail', email);
+        localStorage.setItem('userNfc', event.serialNumber);
+        location.reload();
+      };
+    } catch(e) {
+      alert("NFCが起動できません。AndroidのChrome等で開いてください。");
     }
+  }
 
-    function closeModal() {
-      document.getElementById('customModal').classList.remove('is-active');
-      if (modalCallback) { modalCallback(); modalCallback = null; }
+  // 登録処理（スマホ用）
+  async function doRegister() {
+    const email = document.getElementById('loginEmail').value.trim();
+    if(!email) return alert("先にメールアドレスを入力してください");
+    try {
+      const ndef = new NDEFReader();
+      await ndef.scan();
+      alert("登録したい社員証をタッチしてください");
+      ndef.onreading = event => {
+        google.script.run.withSuccessHandler(m => alert(m)).processRegistration(email, event.serialNumber);
+      };
+    } catch(e) { alert("NFC非対応です"); }
+  }
+
+  // USBスキャナ用登録（Enterキー）
+  document.getElementById('regNfcInput').addEventListener('keypress', async (e) => {
+    if (e.key === 'Enter') {
+      const email = document.getElementById('loginEmail').value.trim();
+      if(!email) return alert("メールアドレスを入力してください");
+      google.script.run.withSuccessHandler(m => alert(m)).processRegistration(email, e.target.value);
+      e.target.value = "";
     }
+  });
 
-    const myEmail = localStorage.getItem('userEmail');
-    const myNfc = localStorage.getItem('userNfc');
+  // コイン送信処理
+  document.getElementById('btnSend').onclick = async () => {
+    const msg = document.getElementById('coinMessage').value.trim();
+    try {
+      const ndef = new NDEFReader();
+      await ndef.scan();
+      document.getElementById('btnSend').innerText = "相手のカードを待機中...";
+      
+      ndef.onreading = async (event) => {
+        const res = await callGas({ 
+          action: 'sendPoint', 
+          email: localStorage.getItem('userEmail'), 
+          nfcId: event.serialNumber,
+          message: msg
+        });
+        
+        if(res.error) {
+          alert(res.error);
+          location.reload();
+        } else {
+          // 音声再生
+          const uttr = new SpeechSynthesisUtterance("サンキュー！");
+          window.speechSynthesis.speak(uttr);
 
-    if (myEmail && myNfc) {
+          // モーダル用HTML作成
+          let body = `<p><strong>${res.receiver}</strong> さんに<br>1コイン送りました！</p>`;
+          if (msg) {
+            body += `<div class="modal-quote">「${msg}」</div>`;
+          }
+          
+          showCustomModal("🎉 送信完了！", body, () => location.reload());
+        }
+      };
+    } catch(e) { alert("NFCスキャンに失敗しました"); }
+  };
+
+  async function callGas(params) {
+    const url = new URL(GAS_URL);
+    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    const response = await fetch(url.toString(), { redirect: "follow" });
+    return await response.json();
+  }
+
+  function logout() {
+    localStorage.clear();
+    location.reload();
+  }
+
+  window.onload = async () => {
+    const email = localStorage.getItem('userEmail');
+    const nfc = localStorage.getItem('userNfc');
+    if(email && nfc) {
       document.getElementById('login-container').style.display = 'none';
       document.getElementById('app-container').style.display = 'block';
-      loadUserData(myEmail, myNfc);
+      document.getElementById('myEmailDisp').innerText = email;
+      
+      const res = await callGas({ action: 'getUserData', email: email, nfcId: nfc });
+      if(!res.error) {
+        document.getElementById('remains').innerText = res.remains;
+        document.getElementById('received').innerText = res.received;
+      }
     }
-
-    async function saveLogin() {
-      const email = document.getElementById('inputEmail').value.trim();
-      if(!email) return showModal("エラー", "メールアドレスを入力してください");
-      showModal("認証中", "そのままご自身の社員証をタッチしてください");
-      try {
-        const ndef = new NDEFReader();
-        await ndef.scan();
-        ndef.onreading = async (event) => {
-          const nfcId = event.serialNumber;
-          try {
-            await callGas({ action: 'getUserData', email: email, nfcId: nfcId });
-            localStorage.setItem('userEmail', email);
-            localStorage.setItem('userNfc', nfcId);
-            showModal("完了", "ログインしました！", () => location.reload());
-          } catch(e) { showModal("認証失敗", e.message); }
-        };
-      } catch (e) { showModal("エラー", "NFCを起動できません"); }
-    }
-
-    async function callGas(params) {
-      const url = new URL(GAS_URL);
-      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-      const response = await fetch(url.toString(), { redirect: "follow" });
-      const data = await response.json();
-      if(data.error) throw new Error(data.error);
-      return data;
-    }
-
-    async function loadUserData(email, nfcId) {
-      try {
-        const data = await callGas({ action: 'getUserData', email: email, nfcId: nfcId });
-        document.getElementById('remains').innerText = data.remains;
-        document.getElementById('received').innerText = data.received;
-      } catch(e) { showModal("認証エラー", e.message, logout); }
-    }
-
-    function logout() { localStorage.clear(); location.reload(); }
-
-    document.getElementById('btnRead').onclick = async () => {
-      const btn = document.getElementById('btnRead');
-      try {
-        const ndef = new NDEFReader();
-        await ndef.scan();
-        btn.classList.add('is-loading');
-        ndef.onreading = async (event) => {
-          try {
-            const res = await callGas({ action: 'sendPoint', email: myEmail, nfcId: event.serialNumber });
-            showModal("🎉 送信完了！", `${res.receiver} さんへ<br>1コイン贈りました！`, () => location.reload(), true);
-          } catch(e) { showModal("エラー", e.message, () => location.reload()); }
-        };
-      } catch (e) { showModal("エラー", "NFC失敗"); }
-    };
-  </script>
+  };
+</script>
 </body>
 </html>
