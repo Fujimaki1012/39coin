@@ -21,7 +21,7 @@
       padding-bottom: 2rem;
     }
 
-    /* ヘッダーデザイン */
+    /* ヘッダー */
     .hero {
       background: var(--primary-gradient);
       padding: 3.5rem 1rem 5rem 1rem;
@@ -35,7 +35,7 @@
       letter-spacing: 0.05em;
     }
 
-    /* メインカード */
+    /* カード */
     .status-card {
       background: white;
       border-radius: 24px;
@@ -44,7 +44,6 @@
       box-shadow: var(--card-shadow);
     }
 
-    /* 入力フォームデザイン */
     .field-label-custom {
       font-size: 0.85rem;
       font-weight: bold;
@@ -59,16 +58,13 @@
       border: 2px solid #edf2f7;
       background-color: #f8fafc;
       transition: all 0.3s ease;
-      box-shadow: none;
     }
 
     .custom-input:focus {
       border-color: var(--accent-color);
       background-color: #fff;
-      box-shadow: 0 0 0 4px rgba(255, 165, 0, 0.1);
     }
 
-    /* ボタンデザイン */
     .main-btn {
       height: 110px;
       font-size: 1.3rem !important;
@@ -78,14 +74,8 @@
       color: white;
       border: none;
       box-shadow: 0 8px 20px rgba(255, 165, 0, 0.3);
-      transition: transform 0.2s;
     }
 
-    .main-btn:active {
-      transform: scale(0.96);
-    }
-
-    /* テスト用登録エリア */
     .test-reg-box {
       margin-top: 3rem;
       padding: 1.8rem;
@@ -98,12 +88,9 @@
       font-size: 0.8rem;
       font-weight: 800;
       color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
       margin-bottom: 1rem;
     }
 
-    /* モーダル内のメッセージ引用デザイン */
     .modal-quote {
       background: #fff9eb;
       padding: 1rem;
@@ -113,24 +100,10 @@
       border-left: 5px solid var(--accent-color);
       text-align: left;
       margin-top: 1rem;
-      line-height: 1.6;
     }
 
     #app-container {
       display: none;
-    }
-
-    .modal-card-custom {
-      border-radius: 24px !important;
-      overflow: hidden;
-    }
-
-    .logout-link {
-      color: #94a3b8;
-      font-size: 0.85rem;
-      text-decoration: underline;
-      margin-top: 2rem;
-      display: block;
     }
   </style>
 </head>
@@ -139,7 +112,6 @@
 <div id="login-container">
   <div class="hero has-text-centered">
     <h1 class="title has-text-white is-3 mb-2">🪙 サンキューコイン</h1>
-    <p class="subtitle is-6 has-text-white-ter">Smart Recognition System</p>
   </div>
   <div class="container px-5">
     <div class="status-card has-text-centered">
@@ -148,16 +120,16 @@
         <label class="field-label-custom">メールアドレス</label>
         <input class="input custom-input" type="email" id="loginEmail" placeholder="example@daiwa-hi.co.jp">
       </div>
-      <button class="button is-warning is-fullwidth has-text-weight-bold" style="height: 3.8rem; border-radius: 14px;" onclick="doLogin()">
+      <button id="loginBtn" class="button is-warning is-fullwidth has-text-weight-bold" style="height: 3.8rem; border-radius: 14px;" onclick="doLogin()">
         社員証をタッチしてログイン
       </button>
       
       <div class="test-reg-box">
-        <p class="reg-title">【開発用テスト】NFC未登録の方</p>
+        <p class="reg-title">【登録】初めての方はこちら</p>
         <div class="field mb-3">
-          <input class="input is-small custom-input" type="text" id="regNfcInput" placeholder="USBスキャナでピッ (Enter)">
+          <input class="input is-small custom-input" type="text" id="regNfcInput" placeholder="USBスキャナでスキャン (Enter)">
         </div>
-        <button class="button is-small is-light is-fullwidth has-text-weight-bold" style="border-radius: 10px;" onclick="doRegister()">
+        <button id="regBtn" class="button is-small is-light is-fullwidth has-text-weight-bold" style="border-radius: 10px;" onclick="doRegister()">
           スマホのNFCで登録
         </button>
       </div>
@@ -168,17 +140,17 @@
 <div id="app-container">
   <div class="hero has-text-centered">
     <h1 class="title has-text-white is-4 mb-1">🪙 サンキューコイン</h1>
-    <p id="myEmailDisp" class="is-size-7 has-text-white-bis opacity-75"></p>
+    <p id="myEmailDisp" class="is-size-7 has-text-white-bis"></p>
   </div>
   <div class="container px-5">
     <div class="status-card has-text-centered mb-5">
       <div class="columns is-mobile">
         <div class="column">
-          <p class="heading has-text-grey">あげる残り</p>
+          <p class="heading">あげる残り</p>
           <p class="title is-2 has-text-danger" id="remains">-</p>
         </div>
         <div class="column">
-          <p class="heading has-text-grey">もらった累計</p>
+          <p class="heading">もらった累計</p>
           <p class="title is-2 has-text-success" id="received">-</p>
         </div>
       </div>
@@ -194,7 +166,7 @@
       <span class="is-size-7 mt-2" style="font-weight: 400;">(相手のカードにタッチ)</span>
     </button>
     
-    <a href="#" class="logout-link has-text-centered" onclick="logout()">ログアウト</a>
+    <a href="javascript:void(0)" class="is-block has-text-centered mt-6 has-text-grey is-size-7" onclick="logout()">ログアウト</a>
   </div>
 </div>
 
@@ -209,108 +181,92 @@
 </div>
 
 <script>
-  // ★重要：デプロイしたURLをここに貼り付け
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
+  const GAS_URL = "あなたのGASデプロイURL"; // ★ここにURLを貼る
 
-  // モーダル表示関数
+  function speak(text) {
+    const uttr = new SpeechSynthesisUtterance(text);
+    uttr.lang = "ja-JP"; uttr.rate = 1.2; uttr.pitch = 1.5;
+    window.speechSynthesis.speak(uttr);
+  }
+
   function showCustomModal(title, htmlBody, callback = null) {
-    const content = document.getElementById('modalMsgContent');
-    content.innerHTML = `
-      <h3 class="title is-4 mb-4">${title}</h3>
-      <div class="is-size-6">${htmlBody}</div>
-    `;
+    document.getElementById('modalMsgContent').innerHTML = `<h3 class="title is-4 mb-4">${title}</h3><div>${htmlBody}</div>`;
     document.getElementById('customModal').classList.add('is-active');
     window.modalCloseCallback = callback;
   }
 
   function closeModal() {
     document.getElementById('customModal').classList.remove('is-active');
-    if (window.modalCloseCallback) {
-      window.modalCloseCallback();
-      window.modalCloseCallback = null;
-    }
+    if (window.modalCloseCallback) { window.modalCloseCallback(); window.modalCloseCallback = null; }
   }
 
-  // ログイン処理
+  // ログイン
   async function doLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     if(!email) return alert("メールアドレスを入力してください");
-    
     try {
       const ndef = new NDEFReader();
       await ndef.scan();
-      alert("ご自身の社員証をスマホにかざしてください");
+      document.getElementById('loginBtn').innerText = "カードを待機中...";
       ndef.onreading = async (event) => {
         const res = await callGas({ action: 'getUserData', email: email, nfcId: event.serialNumber });
-        if(res.error) return alert(res.error);
-        
+        if(res.error) { alert(res.error); document.getElementById('loginBtn').innerText = "社員証をタッチしてログイン"; return; }
         localStorage.setItem('userEmail', email);
         localStorage.setItem('userNfc', event.serialNumber);
         location.reload();
       };
-    } catch(e) {
-      alert("NFCが起動できません。AndroidのChrome等で開いてください。");
-    }
+    } catch(e) { alert("NFCエラー: AndroidのChromeを使用してください"); }
   }
 
-  // 登録処理（スマホ用）
+  // 登録（スマホ）
   async function doRegister() {
     const email = document.getElementById('loginEmail').value.trim();
     if(!email) return alert("先にメールアドレスを入力してください");
     try {
       const ndef = new NDEFReader();
       await ndef.scan();
-      alert("登録したい社員証をタッチしてください");
+      document.getElementById('regBtn').innerText = "カードをかざしてください...";
       ndef.onreading = event => {
-        google.script.run.withSuccessHandler(m => alert(m)).processRegistration(email, event.serialNumber);
+        google.script.run.withSuccessHandler(m => {
+          alert(m);
+          document.getElementById('regBtn').innerText = "スマホのNFCで登録";
+          speak("登録完了");
+        }).processRegistration(email, event.serialNumber);
       };
     } catch(e) { alert("NFC非対応です"); }
   }
 
-  // USBスキャナ用登録（Enterキー）
+  // USBスキャン
   document.getElementById('regNfcInput').addEventListener('keypress', async (e) => {
     if (e.key === 'Enter') {
       const email = document.getElementById('loginEmail').value.trim();
       if(!email) return alert("メールアドレスを入力してください");
-      google.script.run.withSuccessHandler(m => alert(m)).processRegistration(email, e.target.value);
+      google.script.run.withSuccessHandler(m => {
+        alert(m);
+        speak("登録完了");
+      }).processRegistration(email, e.target.value);
       e.target.value = "";
     }
   });
 
-  // コイン送信処理
+  // 送信
   document.getElementById('btnSend').onclick = async () => {
     const msg = document.getElementById('coinMessage').value.trim();
     try {
       const ndef = new NDEFReader();
       await ndef.scan();
       document.getElementById('btnSend').innerText = "相手のカードを待機中...";
-      
       ndef.onreading = async (event) => {
-        const res = await callGas({ 
-          action: 'sendPoint', 
-          email: localStorage.getItem('userEmail'), 
-          nfcId: event.serialNumber,
-          message: msg
-        });
-        
-        if(res.error) {
-          alert(res.error);
-          location.reload();
-        } else {
-          // 音声再生
-          const uttr = new SpeechSynthesisUtterance("サンキュー！");
-          window.speechSynthesis.speak(uttr);
-
-          // モーダル用HTML作成
+        const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), nfcId: event.serialNumber, message: msg });
+        if(res.error) { alert(res.error); location.reload(); }
+        else {
+          speak("サンキュー");
           let body = `<p><strong>${res.receiver}</strong> さんに<br>1コイン送りました！</p>`;
-          if (msg) {
-            body += `<div class="modal-quote">「${msg}」</div>`;
-          }
-          
+          if (msg) body += `<div class="modal-quote">「${msg}」</div>`;
           showCustomModal("🎉 送信完了！", body, () => location.reload());
         }
       };
-    } catch(e) { alert("NFCスキャンに失敗しました"); }
+    } catch(e) { alert("NFC失敗"); }
   };
 
   async function callGas(params) {
@@ -320,10 +276,7 @@
     return await response.json();
   }
 
-  function logout() {
-    localStorage.clear();
-    location.reload();
-  }
+  function logout() { localStorage.clear(); location.reload(); }
 
   window.onload = async () => {
     const email = localStorage.getItem('userEmail');
@@ -332,7 +285,6 @@
       document.getElementById('login-container').style.display = 'none';
       document.getElementById('app-container').style.display = 'block';
       document.getElementById('myEmailDisp').innerText = email;
-      
       const res = await callGas({ action: 'getUserData', email: email, nfcId: nfc });
       if(!res.error) {
         document.getElementById('remains').innerText = res.remains;
