@@ -9,32 +9,25 @@
     :root {
       --main-yellow: #FFD700;
       --deep-yellow: #FFB900;
-      --bubble-yellow: #FFF9C4;
+      --bubble-yellow: #FFF9C4; /* 薄黄色 */
       --btn-orange: linear-gradient(135deg, #FF4B2B 0%, #FF8C00 100%);
     }
 
-    body {
-      background-color: #FFFFFF; /* 下部は白背景 */
-      font-family: 'Hiragino Kaku Gothic ProN', sans-serif;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      margin: 0;
-    }
+    body { background-color: #FFFFFF; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; }
 
-    /* ヘッダー：メッセージ入力まで黄色 */
+    /* ヘッダー領域 */
     .header-area {
       background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%);
-      padding: 1.2rem 1rem 1.8rem 1rem;
+      padding: 1rem 1rem 1.8rem 1rem;
       border-radius: 0 0 35px 35px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       z-index: 10;
       flex-shrink: 0;
     }
 
     .app-title {
       font-weight: 900;
-      color: #FFFFFF !important; /* タイトルは白文字 */
+      color: #FFFFFF !important; /* 白文字タイトル */
       font-size: 1.5rem;
       margin-bottom: 0.8rem !important;
       text-shadow: 0 1px 3px rgba(0,0,0,0.15);
@@ -47,47 +40,28 @@
 
     .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
 
-    /* 送信ボタン：少しだけ小さく */
+    /* 送信ボタン：少し小さく */
     .btn-container { padding: 1.2rem 1rem; background: white; }
     .btn-send {
-      background: var(--btn-orange);
-      color: white;
-      border: none;
-      border-radius: 20px;
-      height: 65px; /* 少し小さく */
-      width: 100%;
-      font-size: 1.4rem;
-      font-weight: 900;
-      box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3);
+      background: var(--btn-orange); color: white; border: none; border-radius: 20px;
+      height: 65px; width: 100%; font-size: 1.4rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3);
     }
 
-    /* メッセージ履歴：白背景・薄黄色吹き出し */
-    .message-scroll { flex: 1; overflow-y: auto; padding: 1rem; background: white; }
+    /* 履歴：白背景に薄黄色吹き出し */
+    .message-scroll { flex: 1; overflow-y: auto; padding: 1rem; background: #FFFFFF; }
     .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; }
     .msg-meta { font-size: 0.7rem; color: #888; width: 100%; display: flex; justify-content: space-between; padding: 0 15px; margin-bottom: 3px; }
     
     .bubble {
-      background: var(--bubble-yellow);
-      padding: 0.8rem 1rem;
-      border-radius: 18px;
-      border-top-left-radius: 2px;
-      position: relative;
-      max-width: 85%;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      color: #333;
-      margin-left: 8px;
+      background: var(--bubble-yellow); padding: 0.8rem 1rem; border-radius: 18px; border-top-left-radius: 2px;
+      position: relative; max-width: 85%; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #333; margin-left: 8px;
     }
     .bubble::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -10px;
-      border-style: solid;
-      border-width: 0 10px 10px 0;
-      border-color: transparent var(--bubble-yellow) transparent transparent;
+      content: ""; position: absolute; top: 0; left: -10px; border-style: solid;
+      border-width: 0 10px 10px 0; border-color: transparent var(--bubble-yellow) transparent transparent;
     }
 
-    /* ログイン画面（トンマナ合わせ） */
+    /* ログイン画面 */
     #login-container { background: var(--main-yellow); height: 100vh; padding: 2.5rem 1.5rem; overflow-y: auto; }
     .login-box { background: white; padding: 1.8rem; border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
     .login-title { font-weight: 900; color: #333; margin-bottom: 1rem; }
@@ -103,17 +77,16 @@
   
   <div class="login-box">
     <p class="login-title">🔑 ログイン</p>
-    <input class="input mb-4" id="loginEmail" type="email" placeholder="メールアドレス" style="border-radius: 12px;">
-    <button id="loginBtn" class="button is-dark is-fullwidth has-text-weight-bold" onclick="doLogin()" style="border-radius: 12px;">カードをタッチ</button>
+    <input class="input mb-4" id="loginEmail" type="email" placeholder="メールアドレス">
+    <button id="loginBtn" class="button is-dark is-fullwidth has-text-weight-bold" onclick="doLogin()">社員証をタッチ</button>
   </div>
 
   <div class="login-box" style="border-top: 6px solid #FF8C00;">
     <p class="login-title">✨ 初めての方（登録）</p>
-    <p class="is-size-7 has-text-grey mb-3">メールアドレスを入力して、<br>自分のカードを登録してください。</p>
-    <input class="input mb-3" id="regEmail" type="email" placeholder="メールアドレス" style="border-radius: 12px;">
+    <input class="input mb-3" id="regEmail" type="email" placeholder="メールアドレス">
     <div class="columns is-mobile is-gapless mb-0">
-      <div class="column pr-1"><input class="input is-small" id="regNfcInput" type="text" placeholder="USB用IDm" style="border-radius: 8px;"></div>
-      <div class="column is-narrow"><button class="button is-small is-warning has-text-weight-bold" onclick="doRegister()" style="border-radius: 8px;">登録実行</button></div>
+      <div class="column pr-1"><input class="input is-small" id="regNfcInput" type="text" placeholder="USB用IDm"></div>
+      <div class="column is-narrow"><button class="button is-small is-warning has-text-weight-bold" onclick="doRegister()">登録</button></div>
     </div>
   </div>
 </div>
@@ -136,7 +109,7 @@
     <p class="is-size-7 has-text-grey-dark mb-4" style="font-weight: bold;">📥 届いたメッセージ</p>
     <div id="message-list"></div>
     <button class="button is-text is-fullwidth has-text-grey mt-6" onclick="logout()">ログアウト</button>
-    <p class="version-tag">Version 1.2.5</p>
+    <p class="version-tag">Version 1.2.6</p>
   </div>
 </div>
 
@@ -157,33 +130,30 @@
 
   async function doLogin() {
     const email = document.getElementById('loginEmail').value.trim();
-    if(!email) return alert("アドレスを入力");
-    const ndef = new NDEFReader();
-    await ndef.scan();
-    document.getElementById('loginBtn').innerText = "カード待機中...";
-    ndef.onreading = async (e) => {
-      const res = await callGas({ action: 'getUserData', email: email, nfcId: e.serialNumber });
-      if(res.error) {
-        alert(res.error);
-        document.getElementById('loginBtn').innerText = "カードをタッチ";
-        return;
-      }
-      localStorage.setItem('userEmail', email);
-      localStorage.setItem('userNfc', e.serialNumber);
-      location.reload();
-    };
+    if(!email) return alert("メールアドレスを入力してください");
+    try {
+      const ndef = new NDEFReader();
+      await ndef.scan();
+      document.getElementById('loginBtn').innerText = "タッチしてください...";
+      ndef.onreading = async (e) => {
+        const res = await callGas({ action: 'getUserData', email: email, nfcId: e.serialNumber });
+        if(res.error) { alert(res.error); document.getElementById('loginBtn').innerText="社員証をタッチ"; return; }
+        localStorage.setItem('userEmail', email);
+        localStorage.setItem('userNfc', e.serialNumber);
+        location.reload();
+      };
+    } catch(e) { alert("NFCエラー: ブラウザの設定を確認してください"); }
   }
 
   async function doRegister() {
     const email = document.getElementById('regEmail').value.trim();
     const usbNfc = document.getElementById('regNfcInput').value.trim();
-    if(!email) return alert("アドレスを入力");
+    if(!email) return alert("アドレスを入力してください");
     if(usbNfc) {
       const res = await callGas({ action: 'register', email: email, nfcId: usbNfc });
       alert(res.message);
     } else {
-      const ndef = new NDEFReader();
-      await ndef.scan();
+      const ndef = new NDEFReader(); await ndef.scan();
       ndef.onreading = async (e) => {
         const res = await callGas({ action: 'register', email: email, nfcId: e.serialNumber });
         alert(res.message);
@@ -195,13 +165,11 @@
     const msg = document.getElementById('coinMessage').value.trim();
     if(!msg) return alert("メッセージを入力してください！");
     const btn = document.getElementById('btnSend');
-    const ndef = new NDEFReader();
-    await ndef.scan();
+    const ndef = new NDEFReader(); await ndef.scan();
     btn.innerText = "相手のカードにタッチ待機中...";
     ndef.onreading = async (e) => {
       const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), nfcId: e.serialNumber, message: msg });
-      if(res.error) alert(res.error);
-      else location.reload();
+      if(res.error) alert(res.error); else location.reload();
     };
   }
 
@@ -217,7 +185,7 @@
         const list = document.getElementById('message-list');
         list.innerHTML = res.messages.length ? '' : '<p class="has-text-centered is-size-7 mt-5 has-text-grey-light">メッセージはありません</p>';
         res.messages.forEach(m => {
-          list.innerHTML += `<div class="msg-group"><div class="msg-meta"><span style="font-weight:bold;">${m.senderName} さん</span><span>${m.date}</span></div><div class="bubble">${m.text || '🎁'}</div></div>`;
+          list.innerHTML += `<div class="msg-group"><div class="msg-meta"><span style="font-weight:bold;">${m.senderName} さん</span><span>${m.date}</span></div><div class="bubble">${m.text}</div></div>`;
         });
       }
     }
