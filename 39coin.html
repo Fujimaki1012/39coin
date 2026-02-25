@@ -7,205 +7,211 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <style>
     :root {
-      --primary-yellow: #FFD700;
-      --secondary-orange: #FFA500;
-      --bg-color: #f0f2f5;
-      --card-radius: 20px;
+      --gold-gradient: linear-gradient(135deg, #FFD700 0%, #FFB900 100%);
+      --fire-gradient: linear-gradient(135deg, #FF4B2B 0%, #FF416C 100%);
+      --bg-color: #f7f9fc;
+      --card-bg: #ffffff;
     }
 
     body {
       background-color: var(--bg-color);
-      font-family: 'Hiragino Kaku Gothic ProN', sans-serif;
+      font-family: 'Segoe UI', Roboto, 'Hiragino Kaku Gothic ProN', sans-serif;
       height: 100vh;
       display: flex;
       flex-direction: column;
       margin: 0;
-      overflow: hidden;
     }
 
-    /* 上部固定エリア（黄色背景） */
-    .fixed-top {
-      background-color: var(--primary-yellow);
-      background-image: linear-gradient(180deg, var(--primary-yellow) 0%, #FFEC8B 100%);
-      padding: 1.5rem 1rem 1rem 1rem;
-      border-radius: 0 0 30px 30px;
-      flex-shrink: 0;
+    /* ヘッダー固定エリア */
+    .header-section {
+      background: var(--gold-gradient);
+      padding: 1.5rem 1rem 2.5rem 1rem;
+      border-radius: 0 0 40px 40px;
+      box-shadow: 0 10px 30px rgba(255, 185, 0, 0.3);
       z-index: 10;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
 
-    .status-card {
-      background: white;
-      border-radius: var(--card-radius);
-      padding: 0.8rem;
-      margin-top: 0.5rem;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      color: #333;
-    }
-
-    /* コインをあげるボタン（目立たせる） */
-    .main-btn {
-      height: 85px;
-      border-radius: 20px;
+    .app-title {
+      color: #fff;
       font-weight: 900;
-      font-size: 1.8rem !important; /* 文字を大きく */
-      background: linear-gradient(135deg, #FF4500 0%, #FF8C00 100%);
+      font-size: 1.5rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 1rem !important;
+    }
+
+    /* ステータスカード */
+    .stats-container {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .stat-box {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 0.8rem;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+
+    .stat-label { font-size: 0.75rem; color: #888; font-weight: bold; margin-bottom: 5px; }
+    .stat-value { font-size: 1.8rem; font-weight: 900; line-height: 1; }
+    .val-remains { color: #ff4b2b; }
+    .val-received { color: #2ecc71; }
+
+    /* メッセージ入力 */
+    .input-area {
+      padding: 1.5rem 1.2rem;
+      margin-top: -20px;
+    }
+
+    .custom-textarea {
+      border-radius: 20px;
+      border: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      padding: 1rem;
+      font-size: 1rem;
+    }
+
+    /* 巨大送信ボタン */
+    .btn-send {
+      background: var(--fire-gradient);
       color: white;
       border: none;
+      border-radius: 25px;
+      height: 100px;
       width: 100%;
+      font-size: 2rem;
+      font-weight: 900;
+      box-shadow: 0 15px 35px rgba(255, 75, 43, 0.4);
       margin-top: 1rem;
-      box-shadow: 0 6px 20px rgba(255, 69, 0, 0.3);
-      transition: transform 0.1s;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.2;
     }
 
-    .main-btn:active {
-      transform: scale(0.98);
+    .btn-send:active { transform: scale(0.96); box-shadow: 0 5px 15px rgba(255, 75, 43, 0.4); }
+
+    .btn-waiting {
+      background: #555 !important;
+      font-size: 1.2rem !important;
+      animation: pulse 1.5s infinite;
     }
 
-    /* 履歴エリア（スクロール） */
-    .scroll-content {
-      flex-grow: 1;
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+
+    /* スクロール履歴 */
+    .history-section {
+      flex: 1;
       overflow-y: auto;
-      padding: 1.5rem 1rem;
+      padding: 1rem 1.2rem;
     }
 
-    .message-item {
-      background: white;
+    .history-title { font-weight: bold; color: #555; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+
+    .msg-bubble {
+      background: #fff;
       padding: 1rem;
-      border-radius: 15px;
-      margin-bottom: 0.8rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      border-radius: 20px;
+      margin-bottom: 1rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+      position: relative;
     }
 
-    /* 送り主と日付を一行に（両端揃え） */
     .msg-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.4rem;
-      border-bottom: 1px solid #f5f5f5;
-      padding-bottom: 0.2rem;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+      color: #999;
     }
 
-    .msg-sender {
-      font-weight: bold;
-      font-size: 0.85rem;
-      color: var(--secondary-orange);
-    }
+    .msg-sender { color: #FFB900; font-weight: bold; }
+    .msg-text { color: #333; font-size: 1rem; font-weight: 500; line-height: 1.4; }
 
-    .msg-date {
-      font-size: 0.7rem;
-      color: #bbb;
+    /* ログイン画面 */
+    .auth-screen { padding: 2rem 1.5rem; overflow-y: auto; }
+    .auth-card {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 30px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
     }
+    .auth-card.register { border-top: 8px solid var(--gold-gradient); }
 
-    .msg-body {
-      font-size: 1rem;
-      color: #444;
-      line-height: 1.4;
-    }
-
-    /* 認証画面 */
-    .auth-container {
-      flex-grow: 1;
-      overflow-y: auto;
-      padding: 2rem 1.2rem;
-    }
-
-    .auth-box {
-      background: white;
-      border-radius: var(--card-radius);
-      padding: 1.8rem;
-      margin-bottom: 2.5rem;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-    }
-
-    .auth-title {
-      font-weight: 800;
-      font-size: 1.2rem;
-      color: #333;
-      margin-bottom: 1rem;
-    }
-
-    .custom-input {
-      border-radius: 12px;
-      border: 2px solid #f0f0f0;
-      height: 3rem;
-    }
-
-    #app-container {
-      display: none;
-      height: 100%;
-      flex-direction: column;
-    }
+    #app-container { display: none; height: 100vh; flex-direction: column; }
   </style>
 </head>
 <body>
 
-<div id="login-container" class="auth-container">
+<div id="login-container" class="auth-screen">
   <div class="has-text-centered mb-6">
-    <h1 class="title is-2" style="color: var(--secondary-orange); letter-spacing: -1px;">🪙 サンキューコイン</h1>
+    <h1 class="title is-2" style="color: #FFB900; font-weight: 900;">39COIN</h1>
   </div>
 
-  <div class="auth-box">
-    <h2 class="auth-title">🔑 ログイン</h2>
-    <input class="input custom-input mb-4" type="email" id="loginEmail" placeholder="メールアドレス">
-    <button id="loginBtn" class="button is-warning is-fullwidth has-text-weight-bold" onclick="doLogin()">社員証をタッチして開始</button>
+  <div class="auth-card">
+    <p class="title is-5 mb-4">🔑 ログイン</p>
+    <input class="input is-medium mb-4" style="border-radius: 15px;" type="email" id="loginEmail" placeholder="メールアドレス">
+    <button id="loginBtn" class="button is-warning is-fullwidth is-large has-text-weight-bold" style="border-radius: 15px;" onclick="doLogin()">カードでログイン</button>
   </div>
 
-  <div class="auth-box" style="border-top: 6px solid var(--primary-yellow);">
-    <h2 class="auth-title">✨ 初めての方（未登録）</h2>
-    <p class="is-size-7 mb-3">メールアドレスを入力して、自分のカードを登録してください。</p>
-    <input class="input custom-input mb-4" type="email" id="regEmail" placeholder="メールアドレス">
-    <div class="columns is-mobile is-gapless mb-2">
+  <div class="auth-card register">
+    <p class="title is-5 mb-2">✨ 初めての方</p>
+    <p class="is-size-7 mb-4 has-text-grey">メールアドレスを入力して、<br>自分のカードを登録してください。</p>
+    <input class="input mb-4" style="border-radius: 15px;" type="email" id="regEmail" placeholder="メールアドレス">
+    <div class="columns is-mobile is-gapless mb-0">
       <div class="column pr-1">
-        <input class="input is-small custom-input" type="text" id="regNfcInput" placeholder="USB用">
+        <input class="input is-small" style="border-radius: 10px;" type="text" id="regNfcInput" placeholder="USB用IDm">
       </div>
       <div class="column is-narrow">
-        <button id="regBtn" class="button is-small is-light" onclick="doRegister()">スマホで登録</button>
+        <button id="regBtn" class="button is-small is-light" style="border-radius: 10px;" onclick="doRegister()">スマホ登録</button>
       </div>
     </div>
   </div>
 </div>
 
 <div id="app-container">
-  <div class="fixed-top has-text-centered">
-    <h1 class="title is-4 mb-2">🪙 サンキューコイン</h1>
-    
-    <div class="status-card">
-      <div class="columns is-mobile">
-        <div class="column">
-          <p class="heading">残り枚数</p>
-          <p class="title is-3 has-text-danger" id="remains">-</p>
-        </div>
-        <div class="column">
-          <p class="heading">もらった枚数</p>
-          <p class="title is-3 has-text-success" id="received">-</p>
-        </div>
+  <div class="header-section has-text-centered">
+    <h1 class="app-title">39COIN</h1>
+    <div class="stats-container">
+      <div class="stat-box">
+        <div class="stat-label">残り枚数</div>
+        <div class="stat-value val-remains" id="remains">-</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">もらった枚数</div>
+        <div class="stat-value val-received" id="received">-</div>
       </div>
     </div>
-
-    <div class="mt-4">
-      <textarea id="coinMessage" class="textarea custom-input" placeholder="感謝のメッセージ（任意）" rows="2"></textarea>
-    </div>
-    </div>
-
-  <div class="px-4">
-    <button id="btnSend" class="main-btn">コインをあげる</button>
   </div>
 
-  <div class="scroll-content">
-    <p class="subtitle is-6 mb-3 has-text-grey-dark" style="font-weight: bold;">📥 届いたメッセージ</p>
+  <div class="input-area">
+    <textarea id="coinMessage" class="textarea custom-textarea" placeholder="感謝の気持ちを添えて..." rows="2"></textarea>
+    <button id="btnSend" class="btn-send">コインをあげる</button>
+  </div>
+
+  <div class="history-section">
+    <p class="history-title"><span>📥</span> 届いたメッセージ</p>
     <div id="message-list"></div>
-    <button class="button is-text is-fullwidth has-text-grey mt-5" onclick="logout()">ログアウト</button>
+    <button class="button is-text is-fullwidth has-text-grey mt-6" onclick="logout()">ログアウト</button>
   </div>
 </div>
 
 <div id="customModal" class="modal">
   <div class="modal-background" onclick="closeModal()"></div>
   <div class="modal-content px-5">
-    <div class="box has-text-centered" style="border-radius: 20px;">
-      <div id="modalMsgContent" class="py-4"></div>
-      <button class="button is-warning is-fullwidth has-text-weight-bold" onclick="closeModal()">閉じる</button>
+    <div class="box has-text-centered" style="border-radius: 30px; padding: 3rem 2rem;">
+      <div id="modalMsgContent"></div>
+      <button class="button is-warning is-fullwidth is-large mt-6" style="border-radius: 20px;" onclick="closeModal()">閉じる</button>
     </div>
   </div>
 </div>
@@ -213,8 +219,8 @@
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
 
-  // 一瞬で切り替えるためのUI制御
-  function switchToAppUI() {
+  // ログイン済みなら即切り替え（中身は後でロード）
+  if (localStorage.getItem('userEmail')) {
     document.getElementById('login-container').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
   }
@@ -228,15 +234,15 @@
 
   function renderMessages(messages) {
     const list = document.getElementById('message-list');
-    list.innerHTML = messages.length ? '' : '<p class="has-text-centered is-size-7 has-text-grey-light mt-5">メッセージはまだありません</p>';
+    list.innerHTML = messages.length ? '' : '<p class="has-text-centered has-text-grey-light mt-6">メッセージはまだありません</p>';
     messages.forEach(m => {
       list.innerHTML += `
-        <div class="message-item">
+        <div class="msg-bubble">
           <div class="msg-header">
-            <span class="msg-sender">👤 ${m.senderName} さん</span>
-            <span class="msg-date">${m.date}</span>
+            <span class="msg-sender">${m.senderName} さんより</span>
+            <span>${m.date}</span>
           </div>
-          <div class="msg-body">${m.text || '（メッセージなし）'}</div>
+          <div class="msg-text">${m.text || '🎁 コインが届きました！'}</div>
         </div>
       `;
     });
@@ -248,41 +254,54 @@
     try {
       const ndef = new NDEFReader();
       await ndef.scan();
-      document.getElementById('loginBtn').innerText = "カードを待機中...";
-      ndef.onreading = async (event) => {
-        const res = await callGas({ action: 'getUserData', email: email, nfcId: event.serialNumber });
-        if(res.error) {
-          alert(res.error);
-          document.getElementById('loginBtn').innerText = "社員証をタッチして開始";
-          return;
-        }
+      document.getElementById('loginBtn').innerText = "タッチしてください...";
+      ndef.onreading = async (e) => {
+        const res = await callGas({ action: 'getUserData', email: email, nfcId: e.serialNumber });
+        if(res.error) return alert(res.error);
         localStorage.setItem('userEmail', email);
-        localStorage.setItem('userNfc', event.serialNumber);
-        updateAppStats(res);
-        switchToAppUI();
+        localStorage.setItem('userNfc', e.serialNumber);
+        updateUI(res);
+        location.reload(); // 確実に反映
       };
     } catch(e) { alert("NFCエラー"); }
   }
 
-  function updateAppStats(data) {
+  async function doRegister() {
+    const email = document.getElementById('regEmail').value.trim();
+    if(!email) return alert("アドレスを入力してください");
+    try {
+      const ndef = new NDEFReader();
+      await ndef.scan();
+      ndef.onreading = async (e) => {
+        const res = await callGas({ action: 'register', email: email, nfcId: e.serialNumber });
+        alert(res.message || res.error);
+      };
+    } catch(e) { alert("NFC非対応"); }
+  }
+
+  function updateUI(data) {
     document.getElementById('remains').innerText = data.remains;
     document.getElementById('received').innerText = data.received;
     renderMessages(data.messages || []);
   }
 
   document.getElementById('btnSend').onclick = async () => {
+    const btn = document.getElementById('btnSend');
     const msg = document.getElementById('coinMessage').value;
     try {
       const ndef = new NDEFReader();
       await ndef.scan();
-      document.getElementById('btnSend').innerText = "相手のカードにタッチ待機中...";
-      ndef.onreading = async (event) => {
-        const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), nfcId: event.serialNumber, message: msg });
-        if(res.error) {
-          alert(res.error);
-          document.getElementById('btnSend').innerText = "コインをあげる";
-        } else {
-          document.getElementById('modalMsgContent').innerHTML = `<h3 class="title is-4">🎉 送信完了</h3><p><b>${res.receiver}</b> さんに送りました！</p>`;
+      btn.innerText = "相手のカードに\nタッチ待機中...";
+      btn.classList.add('btn-waiting');
+      ndef.onreading = async (e) => {
+        const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), nfcId: e.serialNumber, message: msg });
+        if(res.error) alert(res.error);
+        else {
+          document.getElementById('modalMsgContent').innerHTML = `
+            <p style="font-size: 5rem;">🎉</p>
+            <p class="title is-4">${res.receiver} さんに</p>
+            <p class="subtitle is-5">コインを送りました！</p>
+          `;
           document.getElementById('customModal').classList.add('is-active');
           window.onModalClose = () => location.reload();
         }
@@ -297,18 +316,14 @@
 
   function logout() { localStorage.clear(); location.reload(); }
 
-  // 起動時の処理
   window.onload = async () => {
     const email = localStorage.getItem('userEmail');
     const nfc = localStorage.getItem('userNfc');
     if(email && nfc) {
-      // 1. まずUIだけ一瞬で切り替える
-      switchToAppUI();
-      // 2. 裏でデータを最新にする
       try {
         const res = await callGas({ action: 'getUserData', email, nfcId: nfc });
-        updateAppStats(res);
-      } catch(e) { console.log("データ取得失敗"); }
+        updateUI(res);
+      } catch(e) { console.log("ロード失敗"); }
     }
   };
 </script>
