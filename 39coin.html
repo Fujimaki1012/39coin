@@ -9,7 +9,7 @@
     :root {
       --main-yellow: #FFD700;
       --deep-yellow: #FFB900;
-      --bubble-yellow: #FFF176; /* 少し濃くした黄色 */
+      --bubble-yellow: #FFF176;
       --btn-orange: linear-gradient(135deg, #FF4B2B 0%, #FF8C00 100%);
     }
 
@@ -27,7 +27,7 @@
 
     .app-title {
       font-weight: 900;
-      color: #FFFFFF !important; /* 白文字タイトル */
+      color: #FFFFFF !important;
       font-size: 1.5rem;
       margin-bottom: 0.8rem !important;
       text-shadow: 0 1px 3px rgba(0,0,0,0.2);
@@ -40,40 +40,43 @@
     .stat-value { font-size: 1.6rem; font-weight: 900; color: #333; }
     .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); width: 100%; }
 
-    /* 送信ボタン（黄色エリアのすぐ下に配置） */
+    /* 送信ボタン */
     .btn-action-area { padding: 1rem; flex-shrink: 0; background: white; }
     .btn-send {
       background: var(--btn-orange); color: white; border: none; border-radius: 20px;
       height: 60px; width: 100%; font-size: 1.3rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3);
     }
 
-    /* 履歴エリア：スクロール固定見出し */
+    /* 履歴エリア */
     .history-container { flex: 1; overflow-y: auto; background: white; position: relative; }
-    
     .history-header-sticky {
-      position: sticky;
-      top: 0;
-      background: white;
-      padding: 0.8rem 1.2rem;
-      z-index: 10;
-      font-weight: bold;
-      color: #555;
-      font-size: 0.85rem;
-      border-bottom: 1px solid #f0f0f0;
+      position: sticky; top: 0; background: white; padding: 0.8rem 1.2rem; z-index: 10;
+      font-weight: bold; color: #555; font-size: 0.85rem; border-bottom: 1px solid #f0f0f0;
     }
-
     .history-list { padding: 1.2rem 1rem; }
     
     .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; }
     .msg-meta { font-size: 0.7rem; color: #888; width: 100%; display: flex; justify-content: space-between; padding: 0 15px; margin-bottom: 3px; }
     
+    /* 修正: 吹き出しの幅を広げ、複数行に対応 */
     .bubble {
-      background: var(--bubble-yellow); padding: 0.8rem 1rem; border-radius: 18px; border-top-left-radius: 2px;
-      position: relative; max-width: 85%; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #333; margin-left: 10px;
+      background: var(--bubble-yellow);
+      padding: 0.8rem 1rem;
+      border-radius: 18px;
+      border-top-left-radius: 2px;
+      position: relative;
+      max-width: 98%; /* 幅を右側いっぱいまで広げる */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      color: #333;
+      margin-left: 10px;
+      /* 長いテキストを折り返す設定 */
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      line-height: 1.5; /* 行間を少し空けて読みやすく */
     }
     .bubble::after { content: ""; position: absolute; top: 0; left: -10px; border-style: solid; border-width: 0 10px 10px 0; border-color: transparent var(--bubble-yellow) transparent transparent; }
 
-    /* ログイン画面の構成調整（メインに合わせる） */
+    /* ログイン画面 */
     #login-container { height: 100vh; display: flex; flex-direction: column; background: #fff; }
     .login-body { flex: 1; overflow-y: auto; padding: 2rem 1.5rem; }
     .login-card { background: white; border-radius: 25px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem; border: 1px solid #eee; }
@@ -88,8 +91,7 @@
 <div id="login-container">
   <div class="top-header has-text-centered">
     <h1 class="app-title">サンキューコイン</h1>
-    <p style="color: white; font-size: 0.9rem; font-weight: bold; opacity: 0.9;">社内感謝アプリ</p>
-  </div>
+    </div>
   
   <div class="login-body">
     <div class="login-card">
@@ -126,7 +128,7 @@
     <div id="message-list" class="history-list"></div>
     <div class="px-5 pb-5">
       <button class="button is-text is-fullwidth has-text-grey" onclick="logout()">ログアウト</button>
-      <p class="version-tag">Version 1.5.0</p>
+      <p class="version-tag">Version 1.5.1</p>
     </div>
   </div>
 </div>
