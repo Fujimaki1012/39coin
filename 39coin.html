@@ -56,37 +56,41 @@
       background: var(--bubble-yellow); padding: 0.8rem 1rem; border-radius: 18px; border-top-left-radius: 2px;
       position: relative; max-width: 85%; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #333; margin-left: 8px;
     }
-    .bubble::after {
-      content: ""; position: absolute; top: 0; left: -10px; border-style: solid;
-      border-width: 0 10px 10px 0; border-color: transparent var(--bubble-yellow) transparent transparent;
-    }
+    .bubble::after { content: ""; position: absolute; top: 0; left: -10px; border-style: solid; border-width: 0 10px 10px 0; border-color: transparent var(--bubble-yellow) transparent transparent; }
 
     /* ログイン画面 */
-    #login-container { background: var(--main-yellow); height: 100vh; padding: 2.5rem 1.5rem; overflow-y: auto; }
-    .login-box { background: white; padding: 1.8rem; border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
-    .login-title { font-weight: 900; color: #333; margin-bottom: 1rem; }
+    #login-container { background: var(--main-yellow); height: 100vh; padding: 2rem 1.5rem; overflow-y: auto; }
+    .login-box { background: white; padding: 1.5rem; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
+    .login-title { font-weight: 900; font-size: 1.2rem; color: #333; margin-bottom: 1rem; }
+    .guide-text { font-size: 0.8rem; color: #555; margin-bottom: 1rem; line-height: 1.4; }
 
     #app-container { display: none; height: 100%; flex-direction: column; }
-    .version-tag { font-size: 0.6rem; color: #bbb; text-align: center; margin-top: 2rem; padding-bottom: 1rem; }
+    .version-tag { font-size: 0.65rem; color: #ccc; text-align: center; margin-top: 2rem; padding-bottom: 1rem; }
   </style>
 </head>
 <body>
 
 <div id="login-container">
-  <div class="has-text-centered mb-5"><h1 class="title is-3" style="color: #333; font-weight: 900;">サンキューコイン</h1></div>
+  <div class="has-text-centered mb-5"><h1 class="title is-3" style="color: #FFFFFF; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">サンキューコイン</h1></div>
   
   <div class="login-box">
     <p class="login-title">🔑 ログイン</p>
-    <input class="input mb-4" id="loginEmail" type="email" placeholder="メールアドレス">
-    <button id="loginBtn" class="button is-dark is-fullwidth has-text-weight-bold" onclick="doLogin()">社員証をタッチ</button>
+    <input class="input mb-3" id="loginEmail" type="email" placeholder="メールアドレス" style="border-radius: 12px;">
+    <button id="loginBtn" class="button is-dark is-fullwidth has-text-weight-bold" onclick="doLogin()" style="border-radius: 12px; height: 50px;">社員証をタッチ</button>
   </div>
 
-  <div class="login-box" style="border-top: 6px solid #FF8C00;">
+  <div class="login-box" style="border-top: 6px solid #FF4B2B;">
     <p class="login-title">✨ 初めての方（登録）</p>
-    <input class="input mb-3" id="regEmail" type="email" placeholder="メールアドレス">
-    <div class="columns is-mobile is-gapless mb-0">
-      <div class="column pr-1"><input class="input is-small" id="regNfcInput" type="text" placeholder="USB用IDm"></div>
-      <div class="column is-narrow"><button class="button is-small is-warning has-text-weight-bold" onclick="doRegister()">登録</button></div>
+    <div class="guide-text">
+      ① メールアドレスを入力<br>
+      ② 下の大きな登録ボタンを押す<br>
+      ③ 自分の社員証をスマホにタッチ！
+    </div>
+    <input class="input mb-4" id="regEmail" type="email" placeholder="メールアドレス" style="border-radius: 12px;">
+    <button id="regBtn" class="button is-danger is-fullwidth is-large has-text-weight-bold" onclick="doRegister()" style="border-radius: 15px; height: 80px;">カードを登録する</button>
+    <div class="columns is-mobile is-gapless mt-4">
+      <div class="column pr-1"><input class="input is-small" id="regNfcInput" type="text" placeholder="USB用IDm" style="border-radius: 8px;"></div>
+      <div class="column is-narrow"><button class="button is-small is-light" onclick="doRegister(true)" style="border-radius: 8px;">USB登録</button></div>
     </div>
   </div>
 </div>
@@ -109,13 +113,14 @@
     <p class="is-size-7 has-text-grey-dark mb-4" style="font-weight: bold;">📥 届いたメッセージ</p>
     <div id="message-list"></div>
     <button class="button is-text is-fullwidth has-text-grey mt-6" onclick="logout()">ログアウト</button>
-    <p class="version-tag">Version 1.3.1</p>
+    <p class="version-tag">Version 1.4.0</p>
   </div>
 </div>
 
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
 
+  // 高速遷移
   if (localStorage.getItem('userEmail')) {
     document.getElementById('login-container').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
@@ -128,45 +133,68 @@
     return await res.json();
   }
 
+  function renderMessages(messages) {
+    const list = document.getElementById('message-list');
+    list.innerHTML = messages && messages.length ? '' : '<p class="has-text-centered is-size-7 mt-5 has-text-grey-light">メッセージはありません</p>';
+    if(messages) {
+      messages.forEach(m => {
+        list.innerHTML += `<div class="msg-group"><div class="msg-meta"><span style="font-weight:bold;">${m.senderName} さん</span><span>${m.date}</span></div><div class="bubble">${m.text || '🎁 コイン！'}</div></div>`;
+      });
+    }
+  }
+
   async function doLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     if(!email) return alert("アドレスを入力");
-    try {
-      const ndef = new NDEFReader(); await ndef.scan();
-      document.getElementById('loginBtn').innerText = "タッチしてください...";
-      ndef.onreading = async (e) => {
-        const res = await callGas({ action: 'getUserData', email: email, nfcId: e.serialNumber });
-        if(res.error) { alert(res.error); document.getElementById('loginBtn').innerText="社員証をタッチ"; return; }
+    const ndef = new NDEFReader();
+    await ndef.scan();
+    document.getElementById('loginBtn').innerText = "⌛ カード読込中...";
+    ndef.onreading = async (e) => {
+      document.getElementById('loginBtn').innerText = "🔄 認証中...";
+      const res = await callGas({ action: 'getUserData', email: email, nfcId: e.serialNumber });
+      if(res.error) { alert(res.error); document.getElementById('loginBtn').innerText = "社員証をタッチ"; }
+      else {
         localStorage.setItem('userEmail', email);
         localStorage.setItem('userNfc', e.serialNumber);
         location.reload();
-      };
-    } catch(e) { alert("NFCエラー"); }
+      }
+    };
   }
 
-  async function doRegister() {
+  async function doRegister(isUsb = false) {
     const email = document.getElementById('regEmail').value.trim();
-    const usbNfc = document.getElementById('regNfcInput').value.trim();
     if(!email) return alert("アドレスを入力");
-    if(usbNfc) {
-      const res = await callGas({ action: 'register', email: email, nfcId: usbNfc }); alert(res.message);
+    
+    if(isUsb) {
+      const usbNfc = document.getElementById('regNfcInput').value.trim();
+      if(!usbNfc) return alert("USB用IDmを入力してください");
+      const res = await callGas({ action: 'register', email: email, nfcId: usbNfc });
+      alert(res.message || res.error);
     } else {
-      const ndef = new NDEFReader(); await ndef.scan();
+      const ndef = new NDEFReader();
+      await ndef.scan();
+      document.getElementById('regBtn').innerText = "⌛ カードをスマホに当てて...";
       ndef.onreading = async (e) => {
-        const res = await callGas({ action: 'register', email: email, nfcId: e.serialNumber }); alert(res.message);
+        document.getElementById('regBtn').innerText = "🔄 登録中...";
+        const res = await callGas({ action: 'register', email: email, nfcId: e.serialNumber });
+        alert(res.message || res.error);
+        document.getElementById('regBtn').innerText = "カードを登録する";
       };
     }
   }
 
   document.getElementById('btnSend').onclick = async () => {
     const msg = document.getElementById('coinMessage').value.trim();
-    if(!msg) return alert("メッセージを入力してください！");
+    if(!msg) return alert("感謝のメッセージを入力してください！");
     const btn = document.getElementById('btnSend');
-    const ndef = new NDEFReader(); await ndef.scan();
-    btn.innerText = "相手のカードにタッチ待機中...";
+    const ndef = new NDEFReader();
+    await ndef.scan();
+    btn.innerText = "⌛ 相手のカードにタッチ...";
     ndef.onreading = async (e) => {
+      btn.innerText = "🔄 送信中...";
       const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), nfcId: e.serialNumber, message: msg });
-      if(res.error) alert(res.error); else location.reload();
+      if(res.error) { alert(res.error); btn.innerText = "コインをあげる"; }
+      else location.reload();
     };
   }
 
@@ -175,15 +203,12 @@
   window.onload = async () => {
     const email = localStorage.getItem('userEmail');
     if(email) {
+      // 2次元配列で一気にデータを取得
       const res = await callGas({ action: 'getUserData', email: email, nfcId: localStorage.getItem('userNfc') });
-      if(res.success) {
+      if(res.remains !== undefined) {
         document.getElementById('remains').innerText = res.remains;
         document.getElementById('received').innerText = res.received;
-        const list = document.getElementById('message-list');
-        list.innerHTML = res.messages.length ? '' : '<p class="has-text-centered is-size-7 mt-5 has-text-grey-light">メッセージはありません</p>';
-        res.messages.forEach(m => {
-          list.innerHTML += `<div class="msg-group"><div class="msg-meta"><span style="font-weight:bold;">${m.senderName} さん</span><span>${m.date}</span></div><div class="bubble">${m.text}</div></div>`;
-        });
+        renderMessages(res.messages);
       }
     }
   };
