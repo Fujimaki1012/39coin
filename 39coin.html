@@ -9,16 +9,23 @@
     :root {
       --main-yellow: #FFD700;
       --deep-yellow: #FFB900;
-      --bubble-yellow: #FFF9C4; /* 薄黄色 */
+      --bubble-yellow: #FFF9C4;
       --btn-orange: linear-gradient(135deg, #FF4B2B 0%, #FF8C00 100%);
     }
 
-    body { background-color: #FFFFFF; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; }
+    body {
+      background-color: #FFFFFF; /* 下部は白背景 */
+      font-family: sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+    }
 
-    /* ヘッダー領域 */
+    /* ヘッダーエリア（黄色） */
     .header-area {
       background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%);
-      padding: 1rem 1rem 1.8rem 1rem;
+      padding: 1.2rem 1rem 1.8rem 1rem;
       border-radius: 0 0 35px 35px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       z-index: 10;
@@ -40,14 +47,14 @@
 
     .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
 
-    /* 送信ボタン：少し小さく */
-    .btn-container { padding: 1.2rem 1rem; background: white; }
+    /* 送信ボタン */
+    .btn-container { padding: 1.2rem 1rem; background: #FFFFFF; }
     .btn-send {
       background: var(--btn-orange); color: white; border: none; border-radius: 20px;
-      height: 65px; width: 100%; font-size: 1.4rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3);
+      height: 65px; width: 100%; font-size: 1.3rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3);
     }
 
-    /* 履歴：白背景に薄黄色吹き出し */
+    /* メッセージ履歴：白背景・薄黄色吹き出し */
     .message-scroll { flex: 1; overflow-y: auto; padding: 1rem; background: #FFFFFF; }
     .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; }
     .msg-meta { font-size: 0.7rem; color: #888; width: 100%; display: flex; justify-content: space-between; padding: 0 15px; margin-bottom: 3px; }
@@ -83,6 +90,7 @@
 
   <div class="login-box" style="border-top: 6px solid #FF8C00;">
     <p class="login-title">✨ 初めての方（登録）</p>
+    <p class="is-size-7 has-text-grey mb-3">メールアドレスを入力して、<br>自分のカードを登録してください。</p>
     <input class="input mb-3" id="regEmail" type="email" placeholder="メールアドレス">
     <div class="columns is-mobile is-gapless mb-0">
       <div class="column pr-1"><input class="input is-small" id="regNfcInput" type="text" placeholder="USB用IDm"></div>
@@ -109,7 +117,7 @@
     <p class="is-size-7 has-text-grey-dark mb-4" style="font-weight: bold;">📥 届いたメッセージ</p>
     <div id="message-list"></div>
     <button class="button is-text is-fullwidth has-text-grey mt-6" onclick="logout()">ログアウト</button>
-    <p class="version-tag">Version 1.2.6</p>
+    <p class="version-tag">Version 1.3.0</p>
   </div>
 </div>
 
@@ -130,7 +138,7 @@
 
   async function doLogin() {
     const email = document.getElementById('loginEmail').value.trim();
-    if(!email) return alert("メールアドレスを入力してください");
+    if(!email) return alert("アドレスを入力してください");
     try {
       const ndef = new NDEFReader();
       await ndef.scan();
@@ -142,13 +150,13 @@
         localStorage.setItem('userNfc', e.serialNumber);
         location.reload();
       };
-    } catch(e) { alert("NFCエラー: ブラウザの設定を確認してください"); }
+    } catch(e) { alert("NFCエラー"); }
   }
 
   async function doRegister() {
     const email = document.getElementById('regEmail').value.trim();
     const usbNfc = document.getElementById('regNfcInput').value.trim();
-    if(!email) return alert("アドレスを入力してください");
+    if(!email) return alert("アドレスを入力");
     if(usbNfc) {
       const res = await callGas({ action: 'register', email: email, nfcId: usbNfc });
       alert(res.message);
@@ -178,8 +186,9 @@
   window.onload = async () => {
     const email = localStorage.getItem('userEmail');
     if(email) {
+      // APIから全データを一括取得（爆速）
       const res = await callGas({ action: 'getUserData', email: email, nfcId: localStorage.getItem('userNfc') });
-      if(res.remains !== undefined) {
+      if(res.success) {
         document.getElementById('remains').innerText = res.remains;
         document.getElementById('received').innerText = res.received;
         const list = document.getElementById('message-list');
