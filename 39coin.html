@@ -18,7 +18,7 @@
     /* ヘッダー */
     .header-area {
       background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%);
-      padding: 1rem 1rem 1.8rem 1rem;
+      padding: 1.2rem 1rem 1.8rem 1rem;
       border-radius: 0 0 35px 35px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       z-index: 10;
@@ -30,7 +30,7 @@
       color: #FFFFFF !important; /* 白文字 */
       font-size: 1.5rem;
       margin-bottom: 0.8rem !important;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.15);
     }
 
     .stats-row { display: flex; gap: 10px; margin-bottom: 1rem; }
@@ -41,46 +41,48 @@
     .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
 
     /* 送信ボタン */
-    .btn-container { padding: 1rem; flex-shrink: 0; background: white; }
+    .btn-container { padding: 1rem; background: #FFFFFF; }
     .btn-send {
       background: var(--btn-orange); color: white; border: none; border-radius: 20px;
       height: 65px; width: 100%; font-size: 1.4rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3);
     }
 
-    /* 履歴：白背景・薄黄色吹き出し */
-    .message-scroll { flex: 1; overflow-y: auto; padding: 1rem; background: white; }
+    /* 履歴：白背景に薄黄色吹き出し */
+    .message-scroll { flex: 1; overflow-y: auto; padding: 1.5rem 1rem; background: #FFFFFF; }
     .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; }
-    .msg-meta { font-size: 0.7rem; color: #888; width: 100%; display: flex; justify-content: space-between; padding: 0 15px; margin-bottom: 3px; }
+    .msg-meta { font-size: 0.7rem; color: #888; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; margin-bottom: 3px; }
     
     .bubble {
       background: var(--bubble-yellow); padding: 0.8rem 1rem; border-radius: 18px; border-top-left-radius: 2px;
-      position: relative; max-width: 85%; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: #333; margin-left: 10px;
+      position: relative; max-width: 85%; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #333; margin-left: 8px;
     }
-    .bubble::after { content: ""; position: absolute; top: 0; left: -10px; border-style: solid; border-width: 0 10px 10px 0; border-color: transparent var(--bubble-yellow) transparent transparent; }
+    .bubble::after {
+      content: ""; position: absolute; top: 0; left: -10px; border-style: solid;
+      border-width: 0 10px 10px 0; border-color: transparent var(--bubble-yellow) transparent transparent;
+    }
 
     /* ログイン画面 */
     #login-container { background: var(--main-yellow); height: 100vh; padding: 2rem 1.5rem; overflow-y: auto; }
-    .login-box { background: white; padding: 1.5rem; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
-    .login-title { font-weight: 900; font-size: 1.1rem; color: #333; margin-bottom: 1rem; }
+    .login-box { background: white; padding: 1.8rem; border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
+    .login-title { font-weight: 900; color: #333; margin-bottom: 1rem; }
 
     #app-container { display: none; height: 100%; flex-direction: column; }
-    .version-tag { font-size: 0.65rem; color: #ccc; text-align: center; margin-top: 2rem; padding-bottom: 1rem; }
+    .version-tag { font-size: 0.6rem; color: #bbb; text-align: center; margin-top: 2rem; padding-bottom: 1rem; }
   </style>
 </head>
 <body>
 
 <div id="login-container">
-  <div class="has-text-centered mb-5"><h1 class="title is-3" style="color: #FFFFFF; font-weight: 900; text-shadow: 0 1px 3px rgba(0,0,0,0.1);">サンキューコイン</h1></div>
+  <div class="has-text-centered mb-5"><h1 class="title is-3" style="color: #FFFFFF; font-weight: 900;">サンキューコイン</h1></div>
   
   <div class="login-box">
     <p class="login-title">🔑 ログイン</p>
-    <input class="input mb-3" id="loginEmail" type="email" placeholder="メールアドレス" style="border-radius: 12px;">
-    <button id="loginBtn" class="button is-dark is-fullwidth has-text-weight-bold" onclick="handleNfc('login')" style="border-radius: 12px;">社員証をタッチ</button>
+    <input class="input mb-4" id="loginEmail" type="email" placeholder="メールアドレス" style="border-radius: 12px;">
+    <button id="loginBtn" class="button is-dark is-fullwidth has-text-weight-bold" onclick="handleNfc('login')" style="border-radius: 12px; height: 50px;">社員証をタッチ</button>
   </div>
 
   <div class="login-box" style="border-top: 6px solid #FF8C00;">
     <p class="login-title">✨ 初めての方（登録）</p>
-    <p class="is-size-7 mb-3 has-text-grey">メールアドレスを入力して、<br>「登録ボタン」を押してからタッチしてください。</p>
     <input class="input mb-4" id="regEmail" type="email" placeholder="メールアドレス" style="border-radius: 12px;">
     <button id="regBtn" class="button is-danger is-fullwidth is-large has-text-weight-bold" onclick="handleNfc('register')" style="border-radius: 15px; height: 60px;">カードを登録する</button>
   </div>
@@ -103,7 +105,7 @@
   <div class="message-scroll">
     <div id="message-list"></div>
     <button class="button is-text is-fullwidth has-text-grey mt-6" onclick="logout()">ログアウト</button>
-    <p class="version-tag">Version 1.4.1</p>
+    <p class="version-tag">Version 1.4.2</p>
   </div>
 </div>
 
@@ -113,6 +115,13 @@
   if (localStorage.getItem('userEmail')) {
     document.getElementById('login-container').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
+  }
+
+  async function callGas(params) {
+    const url = new URL(GAS_URL);
+    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    const res = await fetch(url.toString(), { redirect: "follow" });
+    return await res.json();
   }
 
   async function handleNfc(type) {
@@ -129,7 +138,7 @@
       btn.innerText = "⌛ 読込中...";
       
       ndef.onreading = async (e) => {
-        ndef.onreading = null; // 二重動作防止
+        ndef.onreading = null; 
         btn.innerText = "🔄 処理中...";
 
         let params = { action: '', email: email, nfcId: e.serialNumber };
@@ -144,24 +153,20 @@
         const res = await callGas(params);
         btn.innerText = originalText;
 
-        if (res.error) alert(res.error);
-        else if (type === 'register') alert(res.message);
-        else {
-          if (type === 'login') {
-            localStorage.setItem('userEmail', email);
-            localStorage.setItem('userNfc', e.serialNumber);
+        if (res.error) {
+          alert(res.error); // ここで「読取値」と「登録値」が出る！
+        } else {
+          if (type === 'register') alert(res.message);
+          else {
+            if (type === 'login') {
+              localStorage.setItem('userEmail', email);
+              localStorage.setItem('userNfc', e.serialNumber);
+            }
+            location.reload();
           }
-          location.reload();
         }
       };
-    } catch (err) { alert("NFCエラー: " + err); }
-  }
-
-  async function callGas(params) {
-    const url = new URL(GAS_URL);
-    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-    const res = await fetch(url.toString(), { redirect: "follow" });
-    return await res.json();
+    } catch (err) { alert("NFCエラー"); }
   }
 
   function logout() { localStorage.clear(); location.reload(); }
