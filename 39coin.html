@@ -9,9 +9,8 @@
     :root {
       --main-yellow: #FFD700;
       --deep-yellow: #FFB900;
-      --bubble-yellow: #FFFDE7;
+      --bubble-yellow: #FFF9C4;
       --btn-orange: linear-gradient(135deg, #FF4B2B 0%, #FF8C00 100%);
-      --card-radius: 20px;
     }
 
     body { background-color: #FFFFFF; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; }
@@ -28,70 +27,62 @@
 
     .app-title {
       font-weight: 900;
-      color: #FFFFFF !important; /* 白文字タイトル */
+      color: #FFFFFF !important; /* 白文字 */
       font-size: 1.5rem;
       margin-bottom: 0.8rem !important;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    /* メイン画面の要素 */
     .stats-row { display: flex; gap: 10px; margin-bottom: 1rem; }
     .stat-card { flex: 1; background: white; padding: 0.5rem; border-radius: 15px; text-align: center; }
     .stat-label { font-size: 0.7rem; color: #666; font-weight: bold; }
     .stat-value { font-size: 1.6rem; font-weight: 900; color: #333; }
-    .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
-    .btn-send { background: var(--btn-orange); color: white; border: none; border-radius: 20px; height: 65px; width: 100%; font-size: 1.4rem; font-weight: 900; margin-top: 1rem; }
 
-    /* 履歴 */
-    .message-scroll { flex: 1; overflow-y: auto; padding: 1.5rem 1rem; background: white; }
-    .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; }
-    .msg-meta { font-size: 0.75rem; color: #999; display: flex; justify-content: space-between; padding: 0 10px; margin-bottom: 4px; }
-    .bubble { background: var(--bubble-yellow); padding: 0.8rem 1rem; border-radius: 18px; border-top-left-radius: 2px; position: relative; max-width: 85%; color: #444; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-left: 10px; }
+    .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+
+    /* 送信ボタン */
+    .btn-container { padding: 1rem; flex-shrink: 0; background: white; }
+    .btn-send {
+      background: var(--btn-orange); color: white; border: none; border-radius: 20px;
+      height: 65px; width: 100%; font-size: 1.4rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3);
+    }
+
+    /* 履歴：白背景・薄黄色吹き出し */
+    .message-scroll { flex: 1; overflow-y: auto; padding: 1rem; background: white; }
+    .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; }
+    .msg-meta { font-size: 0.7rem; color: #888; width: 100%; display: flex; justify-content: space-between; padding: 0 15px; margin-bottom: 3px; }
+    
+    .bubble {
+      background: var(--bubble-yellow); padding: 0.8rem 1rem; border-radius: 18px; border-top-left-radius: 2px;
+      position: relative; max-width: 85%; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: #333; margin-left: 10px;
+    }
     .bubble::after { content: ""; position: absolute; top: 0; left: -10px; border-style: solid; border-width: 0 10px 10px 0; border-color: transparent var(--bubble-yellow) transparent transparent; }
 
-    /* ログイン画面（構成維持・トンマナ合わせ） */
-    #login-container {
-      background: var(--main-yellow); /* 全体背景を黄色に */
-      height: 100vh;
-      padding: 2rem 1.5rem;
-      overflow-y: auto;
-    }
-    .auth-card {
-      background: white;
-      border-radius: var(--card-radius);
-      padding: 1.8rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
-    .card-title { font-weight: 900; font-size: 1.2rem; color: #333; margin-bottom: 1rem; text-align: center; }
-    .guide-text { font-size: 0.8rem; color: #666; margin-bottom: 1rem; line-height: 1.4; text-align: center; }
-    .input-custom { border-radius: 12px; height: 3rem; border: 2px solid #f0f0f0; }
-    .btn-login { background: #ffd54f; color: #333; font-weight: bold; border-radius: 12px; height: 3rem; }
-    .btn-register { background: #f0f0f0; color: #333; font-weight: bold; border-radius: 12px; height: 3rem; }
-    .register-area { border-top: 2px dashed #eee; padding-top: 1.5rem; margin-top: 1.5rem; }
+    /* ログイン画面 */
+    #login-container { background: var(--main-yellow); height: 100vh; padding: 2rem 1.5rem; overflow-y: auto; }
+    .login-box { background: white; padding: 1.5rem; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
+    .login-title { font-weight: 900; font-size: 1.1rem; color: #333; margin-bottom: 1rem; }
 
     #app-container { display: none; height: 100%; flex-direction: column; }
-    .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 100; align-items: center; justify-content: center; font-weight: bold; }
+    .version-tag { font-size: 0.65rem; color: #ccc; text-align: center; margin-top: 2rem; padding-bottom: 1rem; }
   </style>
 </head>
 <body>
 
-<div id="loading-spinner" class="loading-overlay">通信中...</div>
-
 <div id="login-container">
-  <div class="has-text-centered mb-6"><h1 class="title is-3" style="color: #FFFFFF; font-weight: 900;">サンキューコイン</h1></div>
+  <div class="has-text-centered mb-5"><h1 class="title is-3" style="color: #FFFFFF; font-weight: 900; text-shadow: 0 1px 3px rgba(0,0,0,0.1);">サンキューコイン</h1></div>
   
-  <div class="auth-card">
-    <p class="card-title">ログイン</p>
-    <input class="input input-custom mb-4" id="loginEmail" type="email" placeholder="メールアドレスを入力">
-    <button id="loginBtn" class="button is-fullwidth btn-login" onclick="startNfcAction('login')">社員証でログイン</button>
+  <div class="login-box">
+    <p class="login-title">🔑 ログイン</p>
+    <input class="input mb-3" id="loginEmail" type="email" placeholder="メールアドレス" style="border-radius: 12px;">
+    <button id="loginBtn" class="button is-dark is-fullwidth has-text-weight-bold" onclick="handleNfc('login')" style="border-radius: 12px;">社員証をタッチ</button>
+  </div>
 
-    <div class="register-area">
-      <p class="card-title is-size-6">【登録】初めての方</p>
-      <p class="guide-text">メールアドレスを入力し、下のボタンから登録してください。</p>
-      <input class="input input-small input-custom mb-3" id="regNfcInput" type="text" placeholder="USBスキャン用 (Enter)">
-      <button id="regBtn" class="button is-fullwidth btn-register" onclick="startNfcAction('register')">スマホのNFCで登録</button>
-    </div>
+  <div class="login-box" style="border-top: 6px solid #FF8C00;">
+    <p class="login-title">✨ 初めての方（登録）</p>
+    <p class="is-size-7 mb-3 has-text-grey">メールアドレスを入力して、<br>「登録ボタン」を押してからタッチしてください。</p>
+    <input class="input mb-4" id="regEmail" type="email" placeholder="メールアドレス" style="border-radius: 12px;">
+    <button id="regBtn" class="button is-danger is-fullwidth is-large has-text-weight-bold" onclick="handleNfc('register')" style="border-radius: 15px; height: 60px;">カードを登録する</button>
   </div>
 </div>
 
@@ -105,94 +96,72 @@
     <textarea id="coinMessage" class="textarea custom-textarea" placeholder="感謝のメッセージ（必須）" rows="2"></textarea>
   </div>
 
-  <div class="px-4 py-2">
-    <button id="btnSend" class="btn-send" onclick="startNfcAction('send')">コインをあげる</button>
+  <div class="btn-container">
+    <button id="btnSend" class="btn-send" onclick="handleNfc('send')">コインをあげる</button>
   </div>
 
   <div class="message-scroll">
-    <p class="is-size-7 has-text-grey-dark mb-4" style="font-weight: bold;">📥 届いたメッセージ</p>
     <div id="message-list"></div>
     <button class="button is-text is-fullwidth has-text-grey mt-6" onclick="logout()">ログアウト</button>
+    <p class="version-tag">Version 1.4.1</p>
   </div>
 </div>
 
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
-  let ndef = null;
 
   if (localStorage.getItem('userEmail')) {
     document.getElementById('login-container').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
   }
 
-  async function startNfcAction(type) {
-    const email = document.getElementById('loginEmail')?.value.trim() || localStorage.getItem('userEmail');
-    if (!email && type !== 'send') return alert("アドレスを入力してください");
-    if (type === 'send' && !document.getElementById('coinMessage').value.trim()) return alert("メッセージを入力してください");
+  async function handleNfc(type) {
+    const emailField = (type === 'register') ? 'regEmail' : 'loginEmail';
+    const email = document.getElementById(emailField)?.value.trim() || localStorage.getItem('userEmail');
+    if (!email) return alert("アドレスを入力してください");
+
+    const btn = event.currentTarget;
+    const originalText = btn.innerText;
 
     try {
-      if (type !== 'register_usb') { // USB登録以外はNFCを使う
-        if (!ndef) {
-          ndef = new NDEFReader();
-          await ndef.scan();
-        }
-        event.currentTarget.innerText = "⌛ カードをタッチ...";
-      }
+      const ndef = new NDEFReader();
+      await ndef.scan();
+      btn.innerText = "⌛ 読込中...";
+      
+      ndef.onreading = async (e) => {
+        ndef.onreading = null; // 二重動作防止
+        btn.innerText = "🔄 処理中...";
 
-      const handleReading = async (nfcId) => {
-        if(ndef) ndef.onreading = null; 
-        showLoading(true);
-
-        let params = { email: email, nfcId: nfcId };
+        let params = { action: '', email: email, nfcId: e.serialNumber };
         if (type === 'login') params.action = 'getUserData';
-        if (type.startsWith('register')) params.action = 'register';
+        if (type === 'register') params.action = 'register';
         if (type === 'send') {
           params.action = 'sendPoint';
           params.message = document.getElementById('coinMessage').value.trim();
+          if(!params.message) { alert("メッセージを入力してください"); btn.innerText = originalText; return; }
         }
 
         const res = await callGas(params);
-        showLoading(false);
-        
-        if (res.error) {
-          alert(res.error);
-        } else {
-          if (type.startsWith('register')) alert(res.message);
+        btn.innerText = originalText;
+
+        if (res.error) alert(res.error);
+        else if (type === 'register') alert(res.message);
+        else {
           if (type === 'login') {
             localStorage.setItem('userEmail', email);
-            localStorage.setItem('userNfc', nfcId);
-            location.reload();
+            localStorage.setItem('userNfc', e.serialNumber);
           }
-          if (type === 'send') location.reload();
+          location.reload();
         }
-        if(type !== 'register_usb') event.currentTarget.innerText = (type === 'login' ? "社員証でログイン" : (type === 'send' ? "コインをあげる" : "スマホのNFCで登録"));
       };
-
-      if (type === 'register_usb') {
-        const usbId = document.getElementById('regNfcInput').value.trim();
-        if(!usbId) return alert("USB用IDmを入力してください");
-        handleReading(usbId);
-      } else {
-        ndef.onreading = (e) => handleReading(e.serialNumber);
-      }
-
     } catch (err) { alert("NFCエラー: " + err); }
   }
-  
-  // EnterキーでUSB登録
-  document.getElementById('regNfcInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') startNfcAction('register_usb');
-  });
 
   async function callGas(params) {
     const url = new URL(GAS_URL);
     Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
     const res = await fetch(url.toString(), { redirect: "follow" });
     return await res.json();
-  }
-
-  function showLoading(show) {
-    document.getElementById('loading-spinner').style.display = show ? 'flex' : 'none';
   }
 
   function logout() { localStorage.clear(); location.reload(); }
