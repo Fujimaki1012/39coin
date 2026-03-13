@@ -15,6 +15,7 @@
 
     body { background-color: #FFFFFF; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; overflow: hidden; }
 
+    /* ヘッダー共有スタイル */
     .top-header {
       background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%);
       padding: 1rem 1rem 1.8rem 1rem;
@@ -32,59 +33,78 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
 
+    /* メイン画面要素 */
     .stats-row { display: flex; gap: 10px; margin-bottom: 1rem; }
     .stat-card { flex: 1; background: white; padding: 0.5rem; border-radius: 15px; text-align: center; }
     .stat-label { font-size: 0.7rem; color: #666; font-weight: bold; }
     .stat-value { font-size: 1.6rem; font-weight: 900; color: #333; }
     .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); width: 100%; }
 
+    /* 送信ボタン */
     .btn-action-area { padding: 1rem; flex-shrink: 0; background: white; }
     .btn-send {
       background: var(--btn-orange); color: white; border: none; border-radius: 20px;
       height: 60px; width: 100%; font-size: 1.3rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3);
     }
 
+    /* 履歴エリア */
     .history-container { flex: 1; overflow-y: auto; background: white; position: relative; }
     .history-header-sticky {
       position: sticky; top: 0; background: white; padding: 0.8rem 1.2rem; z-index: 10;
       font-weight: bold; color: #555; font-size: 0.85rem; border-bottom: 1px solid #f0f0f0;
     }
     .history-list { padding: 1.2rem 1rem; }
+    
     .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; }
-    .msg-meta { font-size: 0.7rem; color: #888; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; margin-bottom: 3px; }
+    .msg-meta { font-size: 0.7rem; color: #888; width: 100%; display: flex; justify-content: space-between; padding: 0 15px; margin-bottom: 3px; }
+    
+    /* 修正: 吹き出しの幅を広げ、複数行に対応 */
     .bubble {
-      background: var(--bubble-yellow); padding: 0.8rem 1rem; border-radius: 18px; border-top-left-radius: 2px;
-      position: relative; max-width: 98%; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #333; margin-left: 10px;
-      word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;
+      background: var(--bubble-yellow);
+      padding: 0.8rem 1rem;
+      border-radius: 18px;
+      border-top-left-radius: 2px;
+      position: relative;
+      max-width: 98%; /* 幅を右側いっぱいまで広げる */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      color: #333;
+      margin-left: 10px;
+      /* 長いテキストを折り返す設定 */
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      line-height: 1.5; /* 行間を少し空けて読みやすく */
     }
     .bubble::after { content: ""; position: absolute; top: 0; left: -10px; border-style: solid; border-width: 0 10px 10px 0; border-color: transparent var(--bubble-yellow) transparent transparent; }
 
+    /* ログイン画面 */
     #login-container { height: 100vh; display: flex; flex-direction: column; background: #fff; }
     .login-body { flex: 1; overflow-y: auto; padding: 2rem 1.5rem; }
     .login-card { background: white; border-radius: 25px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem; border: 1px solid #eee; }
     .card-label { font-weight: 900; font-size: 1.1rem; color: #333; margin-bottom: 1rem; display: block; }
+
     #app-container { display: none; height: 100%; flex-direction: column; }
     .version-tag { font-size: 0.65rem; color: #ccc; text-align: center; padding: 1.5rem 0; }
   </style>
 </head>
 <body>
 
-<audio id="sound-thankyou" preload="auto">
-  <source src="thankyou.mp3" type="audio/mpeg">
-</audio>
-
 <div id="login-container">
-  <div class="top-header has-text-centered"><h1 class="app-title">サンキューコイン</h1></div>
+  <div class="top-header has-text-centered">
+    <h1 class="app-title">サンキューコイン</h1>
+    </div>
+  
   <div class="login-body">
     <div class="login-card">
       <label class="card-label">🔑 ログイン</label>
       <input class="input mb-4" id="loginEmail" type="email" placeholder="メールアドレス" style="border-radius: 12px; height: 3rem;">
-      <button class="button is-dark is-fullwidth has-text-weight-bold" onclick="handleNfc('login')" style="border-radius: 12px; height: 3rem;">社員証をタッチ</button>
+      <button id="loginBtn" class="button is-dark is-fullwidth has-text-weight-bold" onclick="handleNfc('login')" style="border-radius: 12px; height: 3rem;">社員証をタッチ</button>
     </div>
+
     <div class="login-card" style="border-top: 5px solid #FF8C00;">
       <label class="card-label">✨ 初めての方（登録）</label>
+      <p class="is-size-7 mb-4 has-text-grey">メールアドレスを入力し、下のボタンを押してから自分のカードをスマホに当ててください。</p>
       <input class="input mb-4" id="regEmail" type="email" placeholder="メールアドレス" style="border-radius: 12px; height: 3rem;">
-      <button class="button is-danger is-fullwidth is-large has-text-weight-bold" onclick="handleNfc('register')" style="border-radius: 15px; height: 4.5rem;">カードを登録する</button>
+      <button id="regBtn" class="button is-danger is-fullwidth is-large has-text-weight-bold" onclick="handleNfc('register')" style="border-radius: 15px; height: 4.5rem;">カードを登録する</button>
     </div>
   </div>
 </div>
@@ -98,15 +118,17 @@
     </div>
     <textarea id="coinMessage" class="textarea custom-textarea" placeholder="感謝のメッセージ（必須）" rows="2"></textarea>
   </div>
+
   <div class="btn-action-area">
     <button id="btnSend" class="btn-send" onclick="handleNfc('send')">コインをあげる</button>
   </div>
+
   <div class="history-container">
     <div class="history-header-sticky">📥 届いたメッセージ</div>
     <div id="message-list" class="history-list"></div>
     <div class="px-5 pb-5">
       <button class="button is-text is-fullwidth has-text-grey" onclick="logout()">ログアウト</button>
-      <p class="version-tag">Version 1.5.5</p>
+      <p class="version-tag">Version 1.5.1</p>
     </div>
   </div>
 </div>
@@ -130,7 +152,7 @@
     try {
       const ndef = new NDEFReader();
       await ndef.scan();
-      btn.innerText = "⌛ 読込中...";
+      btn.innerText = "⌛ 読取中...";
       
       ndef.onreading = async (e) => {
         ndef.onreading = null; 
@@ -149,18 +171,13 @@
         btn.innerText = originalText;
 
         if (res.error) alert(res.error);
+        else if (type === 'register') alert(res.message);
         else {
-          if (type === 'send') {
-            // サンキュー音声を再生
-            document.getElementById('sound-thankyou').play();
-            setTimeout(() => { location.reload(); }, 1200); // 音が終わる頃にリロード
-          } else if (type === 'register') {
-            alert(res.message);
-          } else {
+          if (type === 'login') {
             localStorage.setItem('userEmail', email);
             localStorage.setItem('userNfc', e.serialNumber);
-            location.reload();
           }
+          location.reload();
         }
       };
     } catch (err) { alert("NFCエラー: " + err); }
