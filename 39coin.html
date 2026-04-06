@@ -1,158 +1,255 @@
-/**
- * ハトメッセ (Hato-Messe) Backend v1.9.3
- * 2026/04/06 更新
- * * 修正内容:
- * - 応答の確実性を向上（Failed to fetch対策）
- * - 送信者名取得のロジック修正
- */
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
+  <title>ハトメッセ</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <style>
+    :root {
+      --main-yellow: #FFD700;
+      --deep-yellow: #FFB900;
+      --bubble-received: #FFF176;
+      --bubble-sent: #E1F5FE;
+      --btn-orange: linear-gradient(135deg, #FF4B2B 0%, #FF8C00 100%);
+      --status-received: #28a745;
+      --status-remains: #dc3545;
+    }
+    body { background-color: #FFFFFF; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; overflow: hidden; }
+    #loading, #success-screen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.96);
+      z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 2rem;
+    }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--deep-yellow); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .top-header { background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%); padding: 1.2rem 1rem; border-radius: 0 0 35px 35px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; }
+    .app-title { font-weight: 900; color: #FFFFFF !important; font-size: 1.8rem; margin-bottom: 0.4rem !important; text-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .stat-card { background: white; padding: 0.5rem; border-radius: 15px; text-align: center; flex: 1; }
+    .stat-label { font-size: 0.65rem; color: #666; font-weight: bold; }
+    .stat-value { font-size: 1.4rem; font-weight: 900; }
+    #receivedCount { color: var(--status-received); }
+    #remainsCount { color: var(--status-remains); }
+    .send-tabs { display: flex; background: rgba(255,255,255,0.3); border-radius: 10px; margin: 10px 0; padding: 2px; }
+    .send-tab { flex: 1; text-align: center; font-size: 0.8rem; padding: 6px; border-radius: 8px; cursor: pointer; font-weight: bold; color: #555; }
+    .send-tab.active { background: white; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); width: 100%; height: 75px !important; resize: none; }
+    .btn-send { background: var(--btn-orange); color: white; border: none; border-radius: 20px; height: 50px; width: 100%; font-size: 1.3rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3); margin-top: 10px; }
+    .chrome-tabs { display: flex; background: #f1f3f4; border-bottom: 1px solid #ccc; padding-top: 8px; flex-shrink: 0; }
+    .chrome-tab { flex: 1; text-align: center; padding: 12px 0; font-size: 0.85rem; border-radius: 12px 12px 0 0; background: #dadce0; margin: 0 2px; cursor: pointer; color: #5f6368; position: relative; }
+    .chrome-tab.active { background: white; color: #1a73e8; font-weight: bold; border: 1px solid #ccc; border-bottom: 2px solid white; margin-bottom: -1px; z-index: 5; }
+    .history-container { flex: 1; overflow-y: auto; background: white; }
+    .history-list { padding: 1.2rem 1rem; }
+    .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; width: 100%; }
+    .msg-meta { font-size: 0.7rem; color: #888; display: flex; justify-content: space-between; padding: 0 10px; margin-bottom: 2px; }
+    .bubble { padding: 0.8rem 1rem; border-radius: 18px; position: relative; max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .received .bubble { background: var(--bubble-received); border-top-left-radius: 2px; align-self: flex-start; }
+    .sent .bubble { background: var(--bubble-sent); border-top-right-radius: 2px; align-self: flex-end; }
+    #login-container { height: 100vh; display: none; flex-direction: column; background: #fff; }
+    .login-body { padding: 2rem 1.5rem; flex: 1; }
+    .login-box { border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .success-icon { font-size: 5rem; margin-bottom: 1rem; animation: bounce 1s infinite; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+  </style>
+</head>
+<body>
 
-const APP_URL = "https://fujimaki1012.github.io/39coin/39coin.html"; 
+<div id="loading" style="display:none;"><div class="spinner"></div><p class="mt-4 has-text-weight-bold" id="loading-text">Now Loading...</p></div>
 
-function doGet(e) {
-  try {
-    if (!e || !e.parameter) return ContentService.createTextOutput("API Alive");
-    const action = e.parameter.action;
-    const email = e.parameter.email ? e.parameter.email.trim().toLowerCase() : "";
-    const nfcId = e.parameter.nfcId || "";
+<div id="success-screen">
+  <div class="success-icon">🕊️</div>
+  <h2 class="title is-4" id="success-target-name">さんの元に</h2>
+  <h1 class="title is-3" style="color:var(--deep-yellow)">ハトが到着しました！</h1>
+</div>
 
-    if (action === 'autoLogin') return loginAndGetFullData(email, null, true);
-    if (action === 'register') return processRegistrationAPI(email, nfcId);
-    if (action === 'getUserData') return loginAndGetFullData(email, nfcId);
-    if (action === 'sendPoint') return sendPointByHato(email, e.parameter.targetMode, e.parameter.targetValue, e.parameter.message);
-    if (action === 'getEmployeeList') return getEmployeeList();
-  } catch (err) {
-    return createJsonResponse({ error: "システムエラー: " + err.message });
+<audio id="sound-hato" preload="auto" style="display:none;"><source src="hato.mp3" type="audio/mpeg"></audio>
+
+<div id="login-container">
+  <div class="top-header has-text-centered"><h1 class="app-title">ハトメッセ</h1><p class="has-text-white has-text-weight-bold">感謝を運ぶハトのメッセージ</p></div>
+  <div class="login-body">
+    <div class="login-box has-background-white">
+      <label class="label">🔑 ログイン</label>
+      <input class="input mb-4" id="loginEmail" type="email" placeholder="メールアドレス" style="height:3.5rem; border-radius:15px;">
+      <button class="button is-dark is-fullwidth has-text-weight-bold" onclick="handleNfc('login')" style="height:3.5rem; border-radius:15px;">社員証をタッチ</button>
+    </div>
+    <div class="login-box has-background-white" style="border-top: 6px solid #FF8C00;">
+      <label class="label">✨ はじめての登録</label>
+      <input class="input mb-4" id="regEmail" type="email" placeholder="メールアドレス" style="height:3.5rem; border-radius:15px;">
+      <button class="button is-danger is-fullwidth has-text-weight-bold" onclick="handleNfc('register')" style="height:3.5rem; border-radius:15px;">カードを登録する</button>
+    </div>
+  </div>
+</div>
+
+<div id="app-container" style="display:none; flex-direction: column; height: 100vh;">
+  <div class="top-header has-text-centered">
+    <h1 class="app-title">ハトメッセ</h1>
+    <div class="columns is-mobile is-gapless mb-0">
+      <div class="column stat-card mr-2"><div class="stat-label">もらったポイント合計</div><div id="receivedCount" class="stat-value">-</div></div>
+      <div class="column stat-card"><div class="stat-label">送れる残りポイント</div><div id="remainsCount" class="stat-value">-</div></div>
+    </div>
+    <div class="send-tabs">
+      <div id="tab-touch" class="send-tab active" onclick="setSendMode('touch')">📱 直接タッチ</div>
+      <div id="tab-remote" class="send-tab" onclick="setSendMode('remote')">🕊️ 遠隔送信</div>
+    </div>
+    <div id="remote-search" style="display:none;" class="mb-2">
+      <input class="input is-small" id="employeeSearch" list="employees" placeholder="名前を検索して選択">
+      <datalist id="employees"></datalist>
+    </div>
+    <textarea id="hatoMessage" class="textarea custom-textarea" placeholder="メッセージを入力(必須)"></textarea>
+    <button id="btnSend" class="btn-send" onclick="handleSend()">ハトを飛ばす</button>
+  </div>
+  <div class="chrome-tabs">
+    <div id="hist-received-tab" class="chrome-tab active" onclick="toggleHistory('received')">届いたメッセージ</div>
+    <div id="hist-sent-tab" class="chrome-tab" onclick="toggleHistory('sent')">送ったメッセージ</div>
+  </div>
+  <div class="history-container">
+    <div id="message-list" class="history-list"></div>
+    <div class="p-5 has-text-centered"><button class="button is-text is-small has-text-grey" onclick="logout()">ログアウト</button></div>
+  </div>
+</div>
+
+<script>
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
+  let sendMode = 'touch', currentHistory = 'received', allData = null;
+
+  function showLoading(show, text = "Now Loading...") { 
+    document.getElementById('loading').style.display = show ? 'flex' : 'none'; 
+    document.getElementById('loading-text').innerText = text;
   }
-}
 
-function getEmployeeList() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const data = ss.getSheetByName('社員マスタ').getDataRange().getValues();
-  const list = data.slice(1).map(row => row[0]).filter(name => name);
-  return createJsonResponse({ success: true, list: list });
-}
-
-function loginAndGetFullData(email, nfcId, isAuto = false) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const masterSheet = ss.getSheetByName('社員マスタ');
-  const userData = masterSheet.getDataRange().getValues();
-  const historyData = ss.getSheetByName('履歴').getDataRange().getValues();
-  
-  let currentUser = null;
-  let userRowIndex = -1;
-  const userMap = {}; 
-
-  for (let i = 1; i < userData.length; i++) {
-    const row = userData[i];
-    const rowEmail = String(row[1]).trim().toLowerCase();
-    if (rowEmail) userMap[rowEmail] = row[0];
-    if (rowEmail === email) {
-      if (isAuto || nfcId === String(row[2]).trim() || nfcId === String(row[3]).trim()) {
-        currentUser = { name: row[0], email: rowEmail, remains: row[4], received: row[5], welcome: row[6] };
-        userRowIndex = i + 1;
-      }
+  async function callGas(params) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 35000); 
+    const url = new URL(GAS_URL);
+    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    try {
+      const res = await fetch(url.toString(), { redirect: "follow", signal: controller.signal });
+      clearTimeout(timeoutId);
+      return await res.json();
+    } catch (e) {
+      clearTimeout(timeoutId);
+      throw e;
     }
   }
 
-  if (!currentUser) return createJsonResponse({ error: "認証失敗：登録済みのカードではありません。" });
-
-  if (!currentUser.welcome) {
-    sendChatToUser(currentUser.email, "ハトメッセへようこそ！🕊️\nこれから、たくさんの感謝をハトに乗せて飛ばしましょう！", currentUser.name);
-    masterSheet.getRange(userRowIndex, 7).setValue(new Date()); 
+  function setSendMode(mode) {
+    sendMode = mode;
+    document.getElementById('tab-touch').classList.toggle('active', mode==='touch');
+    document.getElementById('tab-remote').classList.toggle('active', mode==='remote');
+    document.getElementById('remote-search').style.display = mode==='remote' ? 'block' : 'none';
   }
 
-  let receivedLogs = [];
-  let sentLogs = [];
-  for (let i = historyData.length - 1; i >= 1; i--) {
-    const row = historyData[i];
-    const log = {
-      sender: userMap[String(row[1]).toLowerCase()] || "不明",
-      receiver: userMap[String(row[2]).toLowerCase()] || "不明",
-      text: row[4] || "",
-      date: Utilities.formatDate(new Date(row[0]), "JST", "MM/dd HH:mm")
-    };
-    if (String(row[2]).toLowerCase() === email) receivedLogs.push(log);
-    if (String(row[1]).toLowerCase() === email) sentLogs.push(log);
-  }
-
-  return createJsonResponse({ success: true, user: currentUser, received: receivedLogs, sent: sentLogs });
-}
-
-function sendPointByHato(fromEmail, mode, targetValue, message) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const userData = ss.getSheetByName('社員マスタ').getDataRange().getValues();
-  const historySheet = ss.getSheetByName('履歴');
-
-  let targetEmail = "";
-  let targetName = "";
-  let senderName = "誰か";
-
-  for (let i = 1; i < userData.length; i++) {
-    const rowEmail = String(userData[i][1]).toLowerCase();
-    if (rowEmail === fromEmail.toLowerCase()) senderName = userData[i][0];
-    
-    if (mode === 'touch') {
-      if (String(userData[i][2]) === targetValue || String(userData[i][3]) === targetValue) {
-        targetName = userData[i][0]; targetEmail = rowEmail;
-      }
-    } else if (userData[i][0] === targetValue) {
-      targetName = userData[i][0]; targetEmail = rowEmail;
+  async function handleSend() {
+    const msg = document.getElementById('hatoMessage').value.trim();
+    if(!msg) return alert("メッセージを入力してください");
+    if(sendMode === 'remote') {
+      const target = document.getElementById('employeeSearch').value;
+      if(!target) return alert("送信先を選択してください");
+      showLoading(true, "ハトを飛ばしています...");
+      try {
+        const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'name', targetValue: target, message: msg });
+        finishSend(res);
+      } catch(err) { handleError(err); }
+    } else {
+      try {
+        const ndef = new NDEFReader(); await ndef.scan();
+        document.getElementById('btnSend').innerText = "⌛ タッチ待機中...";
+        ndef.onreading = async (e) => {
+          ndef.onreading = null; showLoading(true, "ハトを飛ばしています...");
+          try {
+            const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'touch', targetValue: e.serialNumber, message: msg });
+            finishSend(res);
+          } catch(err) { handleError(err); }
+        };
+      } catch(e) { alert("NFCが利用できません。Chrome設定を確認してください。"); }
     }
   }
 
-  if (!targetEmail) return createJsonResponse({ error: "送信先が見つかりません" });
-  if (targetEmail === fromEmail.toLowerCase()) return createJsonResponse({ error: "自分には飛ばせません" });
-
-  // シートへの記録を優先実行
-  historySheet.appendRow([new Date(), fromEmail, targetEmail, 1, message]);
-
-  // 通知処理。エラーが起きても無視してレスポンスへ進む
-  try {
-    sendChatToUser(targetEmail, `${senderName} さんからハトメッセが届きました！🕊️`, targetName);
-  } catch (e) {
-    console.log("Chat notification failed but ignored: " + e.message);
+  function handleError(err) {
+    showLoading(false);
+    console.error(err);
+    // スプレッドシートは更新されている可能性が高いため、リロードを促す
+    alert("通信が不安定ですが、メッセージは送信された可能性があります。画面を更新して確認してください。");
+    location.reload();
   }
 
-  return createJsonResponse({ success: true, receiver: targetName });
-}
+  function finishSend(res) {
+    showLoading(false);
+    if(res && res.error) { alert(res.error); document.getElementById('btnSend').innerText = "ハトを飛ばす"; }
+    else {
+      document.getElementById('success-target-name').innerText = (res ? res.receiver : "相手") + " さんの元に";
+      document.getElementById('success-screen').style.display = 'flex';
+      try { document.getElementById('sound-hato').play().catch(()=>{}); } catch(e){}
+      setTimeout(() => { location.reload(); }, 2500);
+    }
+  }
 
-function sendChatToUser(targetEmail, text, targetName) {
-  const message = {
-    "text": text,
-    "cardsV2": [{
-      "cardId": "hatoNotification",
-      "card": {
-        "header": { "title": "🕊️ ハトメッセが届きました", "subtitle": targetName + " さんへ" },
-        "sections": [{
-          "widgets": [{
-            "buttonList": { "buttons": [{ "text": "アプリで確認", "onClick": { "openLink": { "url": APP_URL + "?email=" + targetEmail } } }] }
-          }]
-        }]
-      }
-    }]
+  function toggleHistory(type) {
+    currentHistory = type;
+    document.getElementById('hist-received-tab').classList.toggle('active', type==='received');
+    document.getElementById('hist-sent-tab').classList.toggle('active', type==='sent');
+    renderHistory();
+  }
+
+  function renderHistory() {
+    if (!allData) return;
+    const list = document.getElementById('message-list');
+    const logs = allData[currentHistory] || [];
+    list.innerHTML = logs.length ? '' : '<p class="has-text-centered has-text-grey mt-6">履歴はありません</p>';
+    logs.forEach(l => {
+      const isReceived = currentHistory === 'received';
+      const nameLabel = isReceived ? `${l.sender} さんから` : `${l.receiver} さんへ`;
+      list.innerHTML += `<div class="msg-group ${isReceived ? 'received' : 'sent'}"><div class="msg-meta"><b>${nameLabel}</b><span>${l.date}</span></div><div class="bubble">${l.text}</div></div>`;
+    });
+  }
+
+  async function handleNfc(type) {
+    const email = document.getElementById(type==='register'?'regEmail':'loginEmail').value.trim();
+    if(!email) return alert("アドレス入力してください");
+    try {
+      const ndef = new NDEFReader(); await ndef.scan();
+      ndef.onreading = async (e) => {
+        showLoading(true, "認証中...");
+        try {
+          const res = await callGas({ action: type==='register'?'register':'getUserData', email: email, nfcId: e.serialNumber });
+          showLoading(false);
+          if(res.error) alert(res.error);
+          else if(type==='register') alert(res.message);
+          else { localStorage.setItem('userEmail', email); localStorage.setItem('userNfc', e.serialNumber); location.reload(); }
+        } catch(err) { alert("認証エラー: 通信環境を確認してください"); location.reload(); }
+      };
+    } catch(e) { alert("NFCエラーが発生しました"); }
+  }
+
+  function logout() { localStorage.clear(); location.reload(); }
+
+  window.onload = async () => {
+    showLoading(true, "Now Loading...");
+    const urlParams = new URLSearchParams(window.location.search);
+    const autoEmail = urlParams.get('email');
+    if(autoEmail) {
+      try {
+        const res = await callGas({ action: 'autoLogin', email: autoEmail });
+        if(res.success) { localStorage.setItem('userEmail', autoEmail); localStorage.setItem('userNfc', "AUTO_LOGIN"); }
+      } catch(e) {}
+    }
+    const email = localStorage.getItem('userEmail');
+    if(email) {
+      try {
+        allData = await callGas({ action: 'getUserData', email: email, nfcId: localStorage.getItem('userNfc') });
+        if(allData.success) {
+          document.getElementById('app-container').style.display = 'flex';
+          document.getElementById('receivedCount').innerText = allData.user.received;
+          document.getElementById('remainsCount').innerText = allData.user.remains;
+          renderHistory();
+          const emp = await callGas({ action: 'getEmployeeList' });
+          if(emp.list) emp.list.forEach(n => document.getElementById('employees').innerHTML += `<option value="${n}">`);
+          showLoading(false);
+        } else { logout(); }
+      } catch(e) { showLoading(false); document.getElementById('login-container').style.display = 'flex'; }
+    } else { document.getElementById('login-container').style.display = 'flex'; showLoading(false); }
   };
-  Chat.Spaces.Messages.create(message, "spaces/app_direct_messages", { "messageReplyOption": "REPLY_MESSAGE_FALLBACK" });
-}
-
-function processRegistrationAPI(email, nfcId) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('社員マスタ');
-  const data = sheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][2]).trim() === nfcId || String(data[i][3]).trim() === nfcId) {
-      return createJsonResponse({ error: "このカードは既に登録済みです。" });
-    }
-  }
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][1]).trim().toLowerCase() === email) {
-      const col = data[i][2] ? 4 : 3;
-      sheet.getRange(i + 1, col).setValue(nfcId);
-      return createJsonResponse({ success: true, message: "✅ カード登録完了！" });
-    }
-  }
-  return createJsonResponse({ error: "アドレスが見つかりません。" });
-}
-
-function createJsonResponse(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
-}
+</script>
+</body>
+</html>
