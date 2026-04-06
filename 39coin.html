@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="google" content="notranslate"> <title>ハトメッセ</title>
+  <meta name="google" content="notranslate">
+  <title>ハトメッセ</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <style>
     :root {
@@ -12,28 +13,28 @@
       --bubble-received: #FFF176;
       --bubble-sent: #E1F5FE;
       --btn-orange: linear-gradient(135deg, #FF4B2B 0%, #FF8C00 100%);
-      --status-received: #5cb85c; /* 緑 */
-      --status-remains: #d9534f;  /* 赤 */
+      --status-received: #28a745; /* 緑 */
+      --status-remains: #dc3545;  /* 赤 */
     }
 
     body { background-color: #FFFFFF; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; overflow: hidden; }
 
-    /* Loading Overlay */
+    /* ロード画面 & 到着画面 */
     #loading, #success-screen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95);
-      z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.96);
+      z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center; padding: 2rem;
     }
     .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--deep-yellow); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* ヘッダーエリア */
+    /* 共通ヘッダー */
     .top-header { background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%); padding: 1.2rem 1rem; border-radius: 0 0 35px 35px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; }
-    .app-title { font-weight: 900; color: #FFFFFF !important; font-size: 1.6rem; margin-bottom: 0.6rem !important; text-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .app-title { font-weight: 900; color: #FFFFFF !important; font-size: 1.8rem; margin-bottom: 0.4rem !important; text-shadow: 0 1px 3px rgba(0,0,0,0.2); }
 
     .stat-card { background: white; padding: 0.5rem; border-radius: 15px; text-align: center; flex: 1; }
-    .stat-label { font-size: 0.7rem; color: #666; font-weight: bold; }
-    .stat-value { font-size: 1.6rem; font-weight: 900; }
+    .stat-label { font-size: 0.65rem; color: #666; font-weight: bold; }
+    .stat-value { font-size: 1.4rem; font-weight: 900; }
     #receivedCount { color: var(--status-received); }
     #remainsCount { color: var(--status-remains); }
 
@@ -41,11 +42,11 @@
     .send-tab { flex: 1; text-align: center; font-size: 0.8rem; padding: 6px; border-radius: 8px; cursor: pointer; font-weight: bold; color: #555; }
     .send-tab.active { background: white; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-    .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); width: 100%; height: 80px !important; resize: none; }
-    .btn-send { background: var(--btn-orange); color: white; border: none; border-radius: 20px; height: 55px; width: 100%; font-size: 1.3rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3); margin-top: 10px; }
+    .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); width: 100%; height: 75px !important; resize: none; }
+    .btn-send { background: var(--btn-orange); color: white; border: none; border-radius: 20px; height: 50px; width: 100%; font-size: 1.3rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3); margin-top: 10px; }
 
-    /* 履歴タブ */
-    .chrome-tabs { display: flex; background: #f1f3f4; border-bottom: 1px solid #ccc; padding-top: 10px; flex-shrink: 0; }
+    /* Chrome風タブ */
+    .chrome-tabs { display: flex; background: #f1f3f4; border-bottom: 1px solid #ccc; padding-top: 8px; flex-shrink: 0; }
     .chrome-tab { flex: 1; text-align: center; padding: 12px 0; font-size: 0.85rem; border-radius: 12px 12px 0 0; background: #dadce0; margin: 0 2px; cursor: pointer; color: #5f6368; position: relative; }
     .chrome-tab.active { background: white; color: #1a73e8; font-weight: bold; border: 1px solid #ccc; border-bottom: 2px solid white; margin-bottom: -1px; z-index: 5; }
 
@@ -53,27 +54,25 @@
     .history-list { padding: 1.2rem 1rem; }
 
     .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; width: 100%; }
-    .msg-meta { font-size: 0.75rem; color: #888; display: flex; justify-content: space-between; padding: 0 10px; margin-bottom: 4px; }
-    .bubble { padding: 0.8rem 1rem; border-radius: 18px; position: relative; max-width: 88%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .received .bubble { background: var(--bubble-received); border-top-left-radius: 2px; align-self: flex-start; margin-left: 10px; }
-    .sent .bubble { background: var(--bubble-sent); border-top-right-radius: 2px; align-self: flex-end; margin-right: 10px; }
+    .msg-meta { font-size: 0.7rem; color: #888; display: flex; justify-content: space-between; padding: 0 10px; margin-bottom: 2px; }
+    .bubble { padding: 0.8rem 1rem; border-radius: 18px; position: relative; max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .received .bubble { background: var(--bubble-received); border-top-left-radius: 2px; align-self: flex-start; }
+    .sent .bubble { background: var(--bubble-sent); border-top-right-radius: 2px; align-self: flex-end; }
 
-    #login-container { height: 100vh; display: flex; flex-direction: column; background: #fff; padding: 3rem 1.5rem; }
+    /* ログイン画面 */
+    #login-container { height: 100vh; display: none; flex-direction: column; background: #fff; }
+    .login-body { padding: 2rem 1.5rem; flex: 1; }
     .login-box { border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 1.5rem; margin-bottom: 1.5rem; }
     
-    /* ハト到着画面のアニメーション用 */
     .success-icon { font-size: 5rem; margin-bottom: 1rem; animation: bounce 1s infinite; }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
   </style>
 </head>
 <body>
 
-<div id="loading">
-  <div class="spinner"></div>
-  <p class="mt-4 has-text-weight-bold" id="loading-text">Now Loading...</p>
-</div>
+<div id="loading"><div class="spinner"></div><p class="mt-4 has-text-weight-bold" id="loading-text">Now Loading...</p></div>
 
-<div id="success-screen">
+<div id="success-screen" style="display:none;">
   <div class="success-icon">🕊️</div>
   <h2 class="title is-4" id="success-target-name">さんの元に</h2>
   <h1 class="title is-3" style="color:var(--deep-yellow)">ハトが到着しました！</h1>
@@ -81,17 +80,19 @@
 
 <audio id="sound-hato" preload="auto"><source src="hato.mp3" type="audio/mpeg"></audio>
 
-<div id="login-container" style="display:none;">
-  <div class="has-text-centered mb-6"><h1 class="title is-1" style="color:var(--deep-yellow); font-weight:900;">ハトメッセ</h1></div>
-  <div class="login-box has-background-white">
-    <label class="label">🔑 ログイン</label>
-    <input class="input mb-4" id="loginEmail" type="email" placeholder="メールアドレス" style="height:3rem; border-radius:12px;">
-    <button class="button is-dark is-fullwidth has-text-weight-bold" onclick="handleNfc('login')">社員証をタッチ</button>
-  </div>
-  <div class="login-box has-background-white" style="border-top: 6px solid #FF8C00;">
-    <label class="label">✨ 新しく登録する</label>
-    <input class="input mb-4" id="regEmail" type="email" placeholder="メールアドレス" style="height:3rem; border-radius:12px;">
-    <button class="button is-danger is-fullwidth has-text-weight-bold" onclick="handleNfc('register')">カードを登録</button>
+<div id="login-container">
+  <div class="top-header has-text-centered"><h1 class="app-title">ハトメッセ</h1><p class="has-text-white has-text-weight-bold">感謝を運ぶハトのメッセージ</p></div>
+  <div class="login-body">
+    <div class="login-box has-background-white">
+      <label class="label">🔑 ログイン</label>
+      <input class="input mb-4" id="loginEmail" type="email" placeholder="メールアドレス" style="height:3.5rem; border-radius:15px;">
+      <button class="button is-dark is-fullwidth has-text-weight-bold" onclick="handleNfc('login')" style="height:3.5rem; border-radius:15px;">社員証をタッチ</button>
+    </div>
+    <div class="login-box has-background-white" style="border-top: 6px solid #FF8C00;">
+      <label class="label">✨ はじめての登録</label>
+      <input class="input mb-4" id="regEmail" type="email" placeholder="メールアドレス" style="height:3.5rem; border-radius:15px;">
+      <button class="button is-danger is-fullwidth has-text-weight-bold" onclick="handleNfc('register')" style="height:3.5rem; border-radius:15px;">カードを登録する</button>
+    </div>
   </div>
 </div>
 
@@ -102,17 +103,14 @@
       <div class="column stat-card mr-2"><div class="stat-label">もらったポイント合計</div><div id="receivedCount" class="stat-value">-</div></div>
       <div class="column stat-card"><div class="stat-label">送れる残りポイント</div><div id="remainsCount" class="stat-value">-</div></div>
     </div>
-    
     <div class="send-tabs">
       <div id="tab-touch" class="send-tab active" onclick="setSendMode('touch')">📱 直接タッチ</div>
       <div id="tab-remote" class="send-tab" onclick="setSendMode('remote')">🕊️ 遠隔送信</div>
     </div>
-
     <div id="remote-search" style="display:none;" class="mb-2">
       <input class="input is-small" id="employeeSearch" list="employees" placeholder="名前を検索して選択">
       <datalist id="employees"></datalist>
     </div>
-
     <textarea id="hatoMessage" class="textarea custom-textarea" placeholder="メッセージを入力(必須)"></textarea>
     <button id="btnSend" class="btn-send" onclick="handleSend()">ハトを飛ばす</button>
   </div>
@@ -123,15 +121,13 @@
   </div>
   <div class="history-container">
     <div id="message-list" class="history-list"></div>
-    <div class="p-5"><button class="button is-text is-fullwidth is-small has-text-grey" onclick="logout()">ログアウト</button></div>
+    <div class="p-5 has-text-centered"><button class="button is-text is-small has-text-grey" onclick="logout()">ログアウト</button></div>
   </div>
 </div>
 
 <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
-  let sendMode = 'touch';
-  let currentHistory = 'received';
-  let allData = null;
+  let sendMode = 'touch', currentHistory = 'received', allData = null;
 
   function showLoading(show, text = "Now Loading...") { 
     document.getElementById('loading').style.display = show ? 'flex' : 'none'; 
@@ -155,7 +151,6 @@
   async function handleSend() {
     const msg = document.getElementById('hatoMessage').value.trim();
     if(!msg) return alert("メッセージを入力してください");
-    
     if(sendMode === 'remote') {
       const target = document.getElementById('employeeSearch').value;
       if(!target) return alert("送信先を選択してください");
@@ -164,12 +159,10 @@
       finishSend(res);
     } else {
       try {
-        const ndef = new NDEFReader();
-        await ndef.scan();
+        const ndef = new NDEFReader(); await ndef.scan();
         document.getElementById('btnSend').innerText = "⌛ タッチ待機中...";
         ndef.onreading = async (e) => {
-          ndef.onreading = null;
-          showLoading(true, "ハトを飛ばしています...");
+          ndef.onreading = null; showLoading(true, "ハトを飛ばしています...");
           const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'touch', targetValue: e.serialNumber, message: msg });
           finishSend(res);
         };
@@ -179,10 +172,8 @@
 
   function finishSend(res) {
     showLoading(false);
-    if(res.error) {
-      alert(res.error);
-      document.getElementById('btnSend').innerText = "ハトを飛ばす";
-    } else {
+    if(res.error) { alert(res.error); document.getElementById('btnSend').innerText = "ハトを飛ばす"; }
+    else {
       document.getElementById('sound-hato').play();
       document.getElementById('success-target-name').innerText = res.receiver + " さんの元に";
       document.getElementById('success-screen').style.display = 'flex';
@@ -219,11 +210,7 @@
         showLoading(false);
         if(res.error) alert(res.error);
         else if(type==='register') alert(res.message);
-        else {
-          localStorage.setItem('userEmail', email);
-          localStorage.setItem('userNfc', e.serialNumber);
-          location.reload();
-        }
+        else { localStorage.setItem('userEmail', email); localStorage.setItem('userNfc', e.serialNumber); location.reload(); }
       };
     } catch(e) { alert("NFCエラーが発生しました"); }
   }
@@ -234,32 +221,23 @@
     showLoading(true, "Now Loading...");
     const urlParams = new URLSearchParams(window.location.search);
     const autoEmail = urlParams.get('email');
-    
     if(autoEmail) {
       const res = await callGas({ action: 'autoLogin', email: autoEmail });
-      if(res.success) {
-        localStorage.setItem('userEmail', autoEmail);
-        localStorage.setItem('userNfc', "AUTO_LOGIN");
-      }
+      if(res.success) { localStorage.setItem('userEmail', autoEmail); localStorage.setItem('userNfc', "AUTO_LOGIN"); }
     }
-
     const email = localStorage.getItem('userEmail');
     if(email) {
-      document.getElementById('app-container').style.display = 'flex';
       allData = await callGas({ action: 'getUserData', email: email, nfcId: localStorage.getItem('userNfc') });
       if(allData.success) {
+        document.getElementById('app-container').style.display = 'flex';
         document.getElementById('receivedCount').innerText = allData.user.received;
         document.getElementById('remainsCount').innerText = allData.user.remains;
         renderHistory();
         const emp = await callGas({ action: 'getEmployeeList' });
-        const dl = document.getElementById('employees');
-        emp.list.forEach(n => dl.innerHTML += `<option value="${n}">`);
+        emp.list.forEach(n => document.getElementById('employees').innerHTML += `<option value="${n}">`);
         showLoading(false);
       } else { logout(); }
-    } else {
-      document.getElementById('login-container').style.display = 'flex';
-      showLoading(false);
-    }
+    } else { document.getElementById('login-container').style.display = 'flex'; showLoading(false); }
   };
 </script>
 </body>
