@@ -8,7 +8,12 @@
   <style>
     :root { --main-yellow: #FFD700; --deep-yellow: #FFB900; --btn-orange: linear-gradient(135deg, #FF4B2B 0%, #FF8C00 100%); }
     body { background-color: #FFFFFF; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; overflow: hidden; }
-    #loading, #success-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.96); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    
+    /* ★修正：初期状態は display: flex にして、最初からロード画面を見せる */
+    #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.96); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    
+    #success-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.96); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    
     .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--deep-yellow); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .top-header { background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%); padding: 1.2rem 1rem; border-radius: 0 0 35px 35px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-shrink: 0; }
@@ -87,10 +92,15 @@
 </div>
 
 <script>
+  // ★ここに自分のGAS URLを貼ってください
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
   let sendMode = 'touch', currentHistory = 'received', allData = null;
 
-  function showLoading(s, t="Loading...") { document.getElementById('loading').style.display = s ? 'flex' : 'none'; if(s) document.getElementById('loading-text').innerText = t; }
+  // ★修正：表示切り替え関数
+  function showLoading(s, t="Now Loading...") { 
+    document.getElementById('loading').style.display = s ? 'flex' : 'none'; 
+    if(s) document.getElementById('loading-text').innerText = t; 
+  }
 
   async function callGas(p) {
     const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 35000);
@@ -108,7 +118,6 @@
     if(sendMode === 'remote') {
       const target = document.getElementById('employeeSearch').value;
       if(!target) return alert("送信先を選択してください");
-      // ★修正：メッセージを「ハトを飛ばしています...」に変更
       showLoading(true, "ハトを飛ばしています...");
       try { const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'name', targetValue: target, message: msg }); finishSend(res); } catch(e) { handleError(e); }
     } else {
@@ -120,7 +129,6 @@
           ndef.onreading = null;
           btn.classList.remove('btn-waiting');
           btn.innerText = "ハトを飛ばす";
-          // ★修正：こちらも「ハトを飛ばしています...」に変更
           showLoading(true, "ハトを飛ばしています...");
           try { const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'touch', targetValue: e.serialNumber, message: msg }); finishSend(res); } catch(e) { handleError(e); }
         };
@@ -196,6 +204,9 @@
   function logout() { localStorage.clear(); location.reload(); }
 
   window.onload = async () => {
+    // ★修正：初期ロード画面を表示させる
+    showLoading(true, "Now Loading...");
+
     const urlParams = new URLSearchParams(window.location.search);
     const autoEmail = urlParams.get('email');
     if(autoEmail) {
