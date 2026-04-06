@@ -24,21 +24,31 @@
     }
     .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--deep-yellow); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
     .top-header { background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%); padding: 1.2rem 1rem; border-radius: 0 0 35px 35px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; }
     .app-title { font-weight: 900; color: #FFFFFF !important; font-size: 1.8rem; margin-bottom: 0.4rem !important; text-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-    .stat-card { background: white; padding: 0.5rem; border-radius: 15px; text-align: center; flex: 1; }
+    
+    /* ステータスカード単位表示 */
+    .stat-card { background: white; padding: 0.5rem; border-radius: 15px; text-align: center; flex: 1; position: relative; }
     .stat-label { font-size: 0.65rem; color: #666; font-weight: bold; }
     .stat-value { font-size: 1.4rem; font-weight: 900; }
-    #receivedCount { color: var(--status-received); }
-    #remainsCount { color: var(--status-remains); }
+    .stat-unit { font-size: 0.8rem; font-weight: bold; margin-left: 2px; }
+    #receivedCount, #receivedUnit { color: var(--status-received); }
+    #remainsCount, #remainsUnit { color: var(--status-remains); }
+
     .send-tabs { display: flex; background: rgba(255,255,255,0.3); border-radius: 10px; margin: 10px 0; padding: 2px; }
     .send-tab { flex: 1; text-align: center; font-size: 0.8rem; padding: 6px; border-radius: 8px; cursor: pointer; font-weight: bold; color: #555; }
     .send-tab.active { background: white; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+    /* 入力欄の拡大 */
+    #employeeSearch { font-size: 1.5rem !important; height: 3.5rem !important; border-radius: 12px; font-weight: bold; }
     .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); width: 100%; height: 75px !important; resize: none; }
     .btn-send { background: var(--btn-orange); color: white; border: none; border-radius: 20px; height: 50px; width: 100%; font-size: 1.3rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3); margin-top: 10px; }
+
     .chrome-tabs { display: flex; background: #f1f3f4; border-bottom: 1px solid #ccc; padding-top: 8px; flex-shrink: 0; }
     .chrome-tab { flex: 1; text-align: center; padding: 12px 0; font-size: 0.85rem; border-radius: 12px 12px 0 0; background: #dadce0; margin: 0 2px; cursor: pointer; color: #5f6368; position: relative; }
     .chrome-tab.active { background: white; color: #1a73e8; font-weight: bold; border: 1px solid #ccc; border-bottom: 2px solid white; margin-bottom: -1px; z-index: 5; }
+    
     .history-container { flex: 1; overflow-y: auto; background: white; }
     .history-list { padding: 1.2rem 1rem; }
     .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; width: 100%; }
@@ -46,10 +56,11 @@
     .bubble { padding: 0.8rem 1rem; border-radius: 18px; position: relative; max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .received .bubble { background: var(--bubble-received); border-top-left-radius: 2px; align-self: flex-start; }
     .sent .bubble { background: var(--bubble-sent); border-top-right-radius: 2px; align-self: flex-end; }
+    
     #login-container { height: 100vh; display: none; flex-direction: column; background: #fff; }
     .login-body { padding: 2rem 1.5rem; flex: 1; }
     .login-box { border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 1.5rem; margin-bottom: 1.5rem; }
-    .success-icon { font-size: 5rem; margin-bottom: 1rem; animation: bounce 1s infinite; }
+    .success-icon { font-size: 6rem; margin-bottom: 1rem; animation: bounce 1s infinite; }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
   </style>
 </head>
@@ -57,16 +68,17 @@
 
 <div id="loading" style="display:none;"><div class="spinner"></div><p class="mt-4 has-text-weight-bold" id="loading-text">Now Loading...</p></div>
 
-<div id="success-screen">
+<div id="success-screen" style="display:none;">
   <div class="success-icon">🕊️</div>
   <h2 class="title is-4" id="success-target-name">さんの元に</h2>
   <h1 class="title is-3" style="color:var(--deep-yellow)">ハトが到着しました！</h1>
+  <p class="mt-4 has-text-grey">まもなく画面を更新します...</p>
 </div>
 
 <audio id="sound-hato" preload="auto" style="display:none;"><source src="hato.mp3" type="audio/mpeg"></audio>
 
 <div id="login-container">
-  <div class="top-header has-text-centered"><h1 class="app-title">ハトメッセ</h1><p class="has-text-white has-text-weight-bold">感謝を運ぶハトのメッセージ</p></div>
+  <div class="top-header has-text-centered"><h1 class="app-title" style="margin-bottom:1.5rem !important;">ハトメッセ</h1></div>
   <div class="login-body">
     <div class="login-box has-background-white">
       <label class="label">🔑 ログイン</label>
@@ -85,15 +97,21 @@
   <div class="top-header has-text-centered">
     <h1 class="app-title">ハトメッセ</h1>
     <div class="columns is-mobile is-gapless mb-0">
-      <div class="column stat-card mr-2"><div class="stat-label">もらったポイント合計</div><div id="receivedCount" class="stat-value">-</div></div>
-      <div class="column stat-card"><div class="stat-label">送れる残りポイント</div><div id="remainsCount" class="stat-value">-</div></div>
+      <div class="column stat-card mr-2">
+        <div class="stat-label">今期もらったポイント</div>
+        <div class="stat-value"><span id="receivedCount">-</span><span id="receivedUnit" class="stat-unit">pt</span></div>
+      </div>
+      <div class="column stat-card">
+        <div class="stat-label">今月の飛ばせるハト</div>
+        <div class="stat-value"><span id="remainsCount">-</span><span id="remainsUnit" class="stat-unit">羽</span></div>
+      </div>
     </div>
     <div class="send-tabs">
       <div id="tab-touch" class="send-tab active" onclick="setSendMode('touch')">📱 直接タッチ</div>
       <div id="tab-remote" class="send-tab" onclick="setSendMode('remote')">🕊️ 遠隔送信</div>
     </div>
     <div id="remote-search" style="display:none;" class="mb-2">
-      <input class="input is-small" id="employeeSearch" list="employees" placeholder="名前を検索して選択">
+      <input class="input" id="employeeSearch" list="employees" placeholder="名前を検索して選択">
       <datalist id="employees"></datalist>
     </div>
     <textarea id="hatoMessage" class="textarea custom-textarea" placeholder="メッセージを入力(必須)"></textarea>
@@ -169,7 +187,6 @@
   function handleError(err) {
     showLoading(false);
     console.error(err);
-    // スプレッドシートは更新されている可能性が高いため、リロードを促す
     alert("通信が不安定ですが、メッセージは送信された可能性があります。画面を更新して確認してください。");
     location.reload();
   }
@@ -181,7 +198,8 @@
       document.getElementById('success-target-name').innerText = (res ? res.receiver : "相手") + " さんの元に";
       document.getElementById('success-screen').style.display = 'flex';
       try { document.getElementById('sound-hato').play().catch(()=>{}); } catch(e){}
-      setTimeout(() => { location.reload(); }, 2500);
+      // 成功画面を5秒表示
+      setTimeout(() => { location.reload(); }, 5000);
     }
   }
 
