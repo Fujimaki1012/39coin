@@ -35,7 +35,6 @@
     .msg-meta { font-size: 0.7rem; color: #888; margin-bottom: 2px; display: flex; justify-content: space-between; padding: 0 5px; }
     .success-icon { font-size: 5rem; animation: bounce 1s infinite; }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-    /* 待機中ボタンのスタイル */
     .btn-waiting { animation: pulse 1.5s infinite; background-color: #666 !important; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
   </style>
@@ -80,10 +79,10 @@
     <div class="send-tabs"><div id="tab-touch" class="send-tab active" onclick="setSendMode('touch')">📱 直接タッチ</div><div id="tab-remote" class="send-tab" onclick="setSendMode('remote')">🕊️ 遠隔送信</div></div>
     <div id="remote-search" style="display:none;"><input class="input" id="employeeSearch" list="employees" placeholder="名前を検索"></div>
     <datalist id="employees"></datalist>
-    <textarea id="hatoMessage" class="textarea custom-textarea" placeholder="メッセージを入力"></textarea>
+    <textarea id="hatoMessage" class="textarea custom-textarea" placeholder="三感のメッセージを入力(必須)"></textarea>
     <button id="btnSend" class="btn-send" onclick="handleSend()">ハトを飛ばす</button>
   </div>
-  <div class="chrome-tabs"><div id="hist-received-tab" class="chrome-tab active" onclick="toggleHistory('received')">届いたハト</div><div id="hist-sent-tab" class="chrome-tab" onclick="toggleHistory('sent')">送ったハト</div></div>
+  <div class="chrome-tabs"><div id="hist-received-tab" class="chrome-tab active" onclick="toggleHistory('received')">届いたメッセージ</div><div id="hist-sent-tab" class="chrome-tab" onclick="toggleHistory('sent')">送ったメッセージ</div></div>
   <div class="history-container"><div id="message-list"></div><div class="has-text-centered p-4"><button class="button is-text is-small" onclick="logout()">ログアウト</button></div></div>
 </div>
 
@@ -104,7 +103,7 @@
 
   async function handleSend() {
     const msg = document.getElementById('hatoMessage').value.trim();
-    if(!msg) return alert("メッセージを入力してください");
+    if(!msg) return alert("三感のメッセージを入力してください");
     const btn = document.getElementById('btnSend');
     if(sendMode === 'remote') {
       const target = document.getElementById('employeeSearch').value;
@@ -153,12 +152,11 @@
       const ndef = new NDEFReader(); 
       await ndef.scan();
       
-      // ★ここが修正ポイント：ボタンの見た目を変える
       btn.innerText = "⌛ カードをかざしてください";
       btn.classList.add('btn-waiting');
 
       ndef.onreading = async (e) => {
-        ndef.onreading = null; // 二重読み込み防止
+        ndef.onreading = null;
         showLoading(true, "認証中...");
         try {
           const res = await callGas({ action: isReg ? 'register' : 'getUserData', email: email, nfcId: e.serialNumber });
