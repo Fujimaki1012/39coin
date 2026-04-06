@@ -108,7 +108,8 @@
     if(sendMode === 'remote') {
       const target = document.getElementById('employeeSearch').value;
       if(!target) return alert("送信先を選択してください");
-      showLoading(true, "ハト準備中...");
+      // ★修正：メッセージを「ハトを飛ばしています...」に変更
+      showLoading(true, "ハトを飛ばしています...");
       try { const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'name', targetValue: target, message: msg }); finishSend(res); } catch(e) { handleError(e); }
     } else {
       try {
@@ -119,7 +120,8 @@
           ndef.onreading = null;
           btn.classList.remove('btn-waiting');
           btn.innerText = "ハトを飛ばす";
-          showLoading(true, "送信中...");
+          // ★修正：こちらも「ハトを飛ばしています...」に変更
+          showLoading(true, "ハトを飛ばしています...");
           try { const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'touch', targetValue: e.serialNumber, message: msg }); finishSend(res); } catch(e) { handleError(e); }
         };
       } catch(e) { alert("NFCエラー"); }
