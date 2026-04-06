@@ -39,6 +39,8 @@
 </head>
 <body>
 
+<audio id="hatoSound" src="hato.mp3" preload="auto"></audio>
+
 <div id="loading"><div class="spinner"></div><p id="loading-text" class="has-text-weight-bold mt-3">Now Loading...</p></div>
 
 <div id="success-screen">
@@ -66,20 +68,21 @@
   <div class="top-header has-text-centered">
     <h1 class="app-title">ハトメッセ</h1>
     <div class="columns is-mobile is-gapless mb-0">
-      <div class="column stat-card mr-2"><div class="stat-label">今期もらったポイント</div><div class="stat-value"><span id="receivedCount">-</span><span class="stat-unit">pt</span></div></div>
-      <div class="column stat-card"><div class="stat-label">今月の飛ばせるハト</div><div class="stat-value"><span id="remainsCount">-</span><span class="stat-unit">羽</span></div></div>
+      <div class="column stat-card mr-2"><div class="stat-label">もらったポイント</div><div class="stat-value"><span id="receivedCount">-</span><span class="stat-unit">pt</span></div></div>
+      <div class="column stat-card"><div class="stat-label">飛ばせるハト</div><div class="stat-value"><span id="remainsCount">-</span><span class="stat-unit">羽</span></div></div>
     </div>
     <div class="send-tabs"><div id="tab-touch" class="send-tab active" onclick="setSendMode('touch')">📱 直接タッチ</div><div id="tab-remote" class="send-tab" onclick="setSendMode('remote')">🕊️ 遠隔送信</div></div>
-    <div id="remote-search" style="display:none;"><input class="input" id="employeeSearch" list="employees" placeholder="名前を検索して選択"></div>
+    <div id="remote-search" style="display:none;"><input class="input" id="employeeSearch" list="employees" placeholder="名前を検索"></div>
     <datalist id="employees"></datalist>
-    <textarea id="hatoMessage" class="textarea custom-textarea" placeholder="三感のメッセージを入力(必須)"></textarea>
+    <textarea id="hatoMessage" class="textarea custom-textarea" placeholder="メッセージを入力"></textarea>
     <button id="btnSend" class="btn-send" onclick="handleSend()">ハトを飛ばす</button>
   </div>
-  <div class="chrome-tabs"><div id="hist-received-tab" class="chrome-tab active" onclick="toggleHistory('received')">届いたメッセージ</div><div id="hist-sent-tab" class="chrome-tab" onclick="toggleHistory('sent')">送ったメッセージ</div></div>
+  <div class="chrome-tabs"><div id="hist-received-tab" class="chrome-tab active" onclick="toggleHistory('received')">届いたハト</div><div id="hist-sent-tab" class="chrome-tab" onclick="toggleHistory('sent')">送ったハト</div></div>
   <div class="history-container"><div id="message-list"></div><div class="has-text-centered p-4"><button class="button is-text is-small" onclick="logout()">ログアウト</button></div></div>
 </div>
 
 <script>
+  // ★ここに自分のGAS URLを貼ってください
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
   let sendMode = 'touch', currentHistory = 'received', allData = null;
 
@@ -96,21 +99,21 @@
 
   async function handleSend() {
     const msg = document.getElementById('hatoMessage').value.trim();
-    if(!msg) return alert("三感のメッセージを入力してください");
+    if(!msg) return alert("メッセージを入力してください");
     if(sendMode === 'remote') {
       const target = document.getElementById('employeeSearch').value;
       if(!target) return alert("送信先を選択してください");
-      showLoading(true, "ハトを飛ばしています...");
+      showLoading(true, "送信中...");
       try { const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'name', targetValue: target, message: msg }); finishSend(res); } catch(e) { handleError(e); }
     } else {
       try {
         const ndef = new NDEFReader(); await ndef.scan();
         document.getElementById('btnSend').innerText = "⌛ タッチ待機中...";
         ndef.onreading = async (e) => {
-          ndef.onreading = null; showLoading(true, "ハトを飛ばしています...");
+          ndef.onreading = null; showLoading(true, "送信中...");
           try { const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'touch', targetValue: e.serialNumber, message: msg }); finishSend(res); } catch(e) { handleError(e); }
         };
-      } catch(e) { alert("NFCエラーが発生しました"); }
+      } catch(e) { alert("NFCエラー"); }
     }
   }
 
@@ -118,13 +121,17 @@
     showLoading(false);
     if(res.error) { alert(res.error); document.getElementById('btnSend').innerText = "ハトを飛ばす"; }
     else {
+      // ★音を鳴らす
+      const sound = document.getElementById('hatoSound');
+      if(sound) { sound.currentTime = 0; sound.play().catch(e => console.log(e)); }
+      
       document.getElementById('success-target-name').innerText = res.receiver + " さんの元に";
       document.getElementById('success-screen').style.display = 'flex';
       setTimeout(() => location.reload(), 5000);
     }
   }
 
-  function handleError(e) { showLoading(false); alert("通信エラーが発生しました。画面を更新してください。"); location.reload(); }
+  function handleError(e) { showLoading(false); alert("通信エラー"); location.reload(); }
 
   function toggleHistory(t) { currentHistory = t; document.getElementById('hist-received-tab').classList.toggle('active', t==='received'); document.getElementById('hist-sent-tab').classList.toggle('active', t==='sent'); renderHistory(); }
 
@@ -132,7 +139,7 @@
     if(!allData) return;
     const list = document.getElementById('message-list');
     const logs = allData[currentHistory] || [];
-    list.innerHTML = logs.length ? '' : '<p class="has-text-centered has-text-grey mt-5">履歴はありません</p>';
+    list.innerHTML = logs.length ? '' : '<p class="has-text-centered has-text-grey mt-5">履歴なし</p>';
     logs.forEach(l => {
       const isR = currentHistory === 'received';
       list.innerHTML += `<div class="msg-group ${isR?'received':'sent'}"><div class="msg-meta"><b>${isR?l.sender:l.receiver} ${isR?'から':'へ'}</b><span>${l.date}</span></div><div class="bubble">${l.text}</div></div>`;
@@ -150,11 +157,11 @@
           const res = await callGas({ action: type==='register'?'register':'getUserData', email: email, nfcId: e.serialNumber });
           showLoading(false);
           if(res.error) alert(res.error);
-          else if(type==='register') alert("✅ カード登録完了！ログインしてください。");
+          else if(type==='register') alert("登録完了！");
           else { localStorage.setItem('userEmail', email); localStorage.setItem('userNfc', e.serialNumber); location.reload(); }
         } catch(e) { alert("通信エラー"); }
       };
-    } catch(e) { alert("NFCエラーが発生しました"); }
+    } catch(e) { alert("NFCエラー"); }
   }
 
   function logout() { localStorage.clear(); location.reload(); }
