@@ -28,8 +28,7 @@
     .top-header { background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%); padding: 1.2rem 1rem; border-radius: 0 0 35px 35px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; }
     .app-title { font-weight: 900; color: #FFFFFF !important; font-size: 1.8rem; margin-bottom: 0.4rem !important; text-shadow: 0 1px 3px rgba(0,0,0,0.2); }
     
-    /* ステータスカード単位表示 */
-    .stat-card { background: white; padding: 0.5rem; border-radius: 15px; text-align: center; flex: 1; position: relative; }
+    .stat-card { background: white; padding: 0.5rem; border-radius: 15px; text-align: center; flex: 1; }
     .stat-label { font-size: 0.65rem; color: #666; font-weight: bold; }
     .stat-value { font-size: 1.4rem; font-weight: 900; }
     .stat-unit { font-size: 0.8rem; font-weight: bold; margin-left: 2px; }
@@ -40,8 +39,8 @@
     .send-tab { flex: 1; text-align: center; font-size: 0.8rem; padding: 6px; border-radius: 8px; cursor: pointer; font-weight: bold; color: #555; }
     .send-tab.active { background: white; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-    /* 入力欄の拡大 */
-    #employeeSearch { font-size: 1.5rem !important; height: 3.5rem !important; border-radius: 12px; font-weight: bold; }
+    /* 入力欄サイズ調整 (元の1.5倍程度) */
+    #employeeSearch { font-size: 1.25rem !important; height: 3rem !important; border-radius: 12px; font-weight: bold; }
     .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); width: 100%; height: 75px !important; resize: none; }
     .btn-send { background: var(--btn-orange); color: white; border: none; border-radius: 20px; height: 50px; width: 100%; font-size: 1.3rem; font-weight: 900; box-shadow: 0 6px 15px rgba(255, 75, 43, 0.3); margin-top: 10px; }
 
@@ -114,7 +113,7 @@
       <input class="input" id="employeeSearch" list="employees" placeholder="名前を検索して選択">
       <datalist id="employees"></datalist>
     </div>
-    <textarea id="hatoMessage" class="textarea custom-textarea" placeholder="メッセージを入力(必須)"></textarea>
+    <textarea id="hatoMessage" class="textarea custom-textarea" placeholder="三感のメッセージを入力(必須)"></textarea>
     <button id="btnSend" class="btn-send" onclick="handleSend()">ハトを飛ばす</button>
   </div>
   <div class="chrome-tabs">
@@ -160,7 +159,7 @@
 
   async function handleSend() {
     const msg = document.getElementById('hatoMessage').value.trim();
-    if(!msg) return alert("メッセージを入力してください");
+    if(!msg) return alert("三感のメッセージを入力してください");
     if(sendMode === 'remote') {
       const target = document.getElementById('employeeSearch').value;
       if(!target) return alert("送信先を選択してください");
@@ -198,7 +197,6 @@
       document.getElementById('success-target-name').innerText = (res ? res.receiver : "相手") + " さんの元に";
       document.getElementById('success-screen').style.display = 'flex';
       try { document.getElementById('sound-hato').play().catch(()=>{}); } catch(e){}
-      // 成功画面を5秒表示
       setTimeout(() => { location.reload(); }, 5000);
     }
   }
