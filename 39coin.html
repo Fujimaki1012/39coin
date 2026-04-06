@@ -35,6 +35,9 @@
     .msg-meta { font-size: 0.7rem; color: #888; margin-bottom: 2px; display: flex; justify-content: space-between; padding: 0 5px; }
     .success-icon { font-size: 5rem; animation: bounce 1s infinite; }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    /* 待機中ボタンのスタイル */
+    .btn-waiting { animation: pulse 1.5s infinite; background-color: #666 !important; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
   </style>
 </head>
 <body>
@@ -53,13 +56,16 @@
 <div id="login-container" style="display:none; flex-direction:column; height:100vh;">
   <div class="top-header has-text-centered"><h1 class="app-title" style="padding:1.5rem 0;">ハトメッセ</h1></div>
   <div class="p-5">
-    <div class="box"><label class="label">🔑 ログイン</label>
+    <div class="box" style="border-left: 8px solid #333;">
+      <label class="label">🔑 ログイン</label>
       <input class="input mb-4" id="loginEmail" type="email" placeholder="メールアドレス">
-      <button class="button is-dark is-fullwidth" onclick="handleNfc('login')">社員証をタッチ</button>
+      <button class="button is-dark is-fullwidth has-text-weight-bold" id="btnLogin" onclick="handleNfc('login')">社員証をタッチしてログイン</button>
     </div>
-    <div class="box" style="border-top: 5px solid #FF8C00;"><label class="label">✨ はじめての登録</label>
+    <div class="box" style="border-left: 8px solid #FF8C00; margin-top: 2rem;">
+      <label class="label">✨ はじめての登録</label>
+      <p class="is-size-7 has-text-grey mb-2">まだカードを登録していない方はこちら</p>
       <input class="input mb-4" id="regEmail" type="email" placeholder="メールアドレス">
-      <button class="button is-danger is-fullwidth" onclick="handleNfc('register')">カードを登録</button>
+      <button class="button is-danger is-fullwidth has-text-weight-bold" id="btnReg" onclick="handleNfc('register')">新しいカードを登録する</button>
     </div>
   </div>
 </div>
@@ -82,7 +88,6 @@
 </div>
 
 <script>
-  // ★ここに自分のGAS URLを貼ってください
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
   let sendMode = 'touch', currentHistory = 'received', allData = null;
 
@@ -100,17 +105,22 @@
   async function handleSend() {
     const msg = document.getElementById('hatoMessage').value.trim();
     if(!msg) return alert("メッセージを入力してください");
+    const btn = document.getElementById('btnSend');
     if(sendMode === 'remote') {
       const target = document.getElementById('employeeSearch').value;
       if(!target) return alert("送信先を選択してください");
-      showLoading(true, "送信中...");
+      showLoading(true, "ハト準備中...");
       try { const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'name', targetValue: target, message: msg }); finishSend(res); } catch(e) { handleError(e); }
     } else {
       try {
         const ndef = new NDEFReader(); await ndef.scan();
-        document.getElementById('btnSend').innerText = "⌛ タッチ待機中...";
+        btn.innerText = "⌛ 社員証をかざしてください";
+        btn.classList.add('btn-waiting');
         ndef.onreading = async (e) => {
-          ndef.onreading = null; showLoading(true, "送信中...");
+          ndef.onreading = null;
+          btn.classList.remove('btn-waiting');
+          btn.innerText = "ハトを飛ばす";
+          showLoading(true, "送信中...");
           try { const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'touch', targetValue: e.serialNumber, message: msg }); finishSend(res); } catch(e) { handleError(e); }
         };
       } catch(e) { alert("NFCエラー"); }
@@ -121,10 +131,8 @@
     showLoading(false);
     if(res.error) { alert(res.error); document.getElementById('btnSend').innerText = "ハトを飛ばす"; }
     else {
-      // ★音を鳴らす
       const sound = document.getElementById('hatoSound');
       if(sound) { sound.currentTime = 0; sound.play().catch(e => console.log(e)); }
-      
       document.getElementById('success-target-name').innerText = res.receiver + " さんの元に";
       document.getElementById('success-screen').style.display = 'flex';
       setTimeout(() => location.reload(), 5000);
@@ -132,6 +140,45 @@
   }
 
   function handleError(e) { showLoading(false); alert("通信エラー"); location.reload(); }
+
+  async function handleNfc(type) {
+    const isReg = (type === 'register');
+    const email = document.getElementById(isReg ? 'regEmail' : 'loginEmail').value.trim();
+    const btn = document.getElementById(isReg ? 'btnReg' : 'btnLogin');
+    const originalText = btn.innerText;
+
+    if(!email) return alert("メールアドレスを入力してください");
+
+    try {
+      const ndef = new NDEFReader(); 
+      await ndef.scan();
+      
+      // ★ここが修正ポイント：ボタンの見た目を変える
+      btn.innerText = "⌛ カードをかざしてください";
+      btn.classList.add('btn-waiting');
+
+      ndef.onreading = async (e) => {
+        ndef.onreading = null; // 二重読み込み防止
+        showLoading(true, "認証中...");
+        try {
+          const res = await callGas({ action: isReg ? 'register' : 'getUserData', email: email, nfcId: e.serialNumber });
+          showLoading(false);
+          btn.innerText = originalText;
+          btn.classList.remove('btn-waiting');
+          if(res.error) alert(res.error);
+          else if(isReg) alert("登録完了！ログインしてください");
+          else { localStorage.setItem('userEmail', email); localStorage.setItem('userNfc', e.serialNumber); location.reload(); }
+        } catch(e) { 
+          showLoading(false); 
+          btn.innerText = originalText;
+          btn.classList.remove('btn-waiting');
+          alert("通信エラー"); 
+        }
+      };
+    } catch(e) { 
+        alert("NFCが起動できませんでした"); 
+    }
+  }
 
   function toggleHistory(t) { currentHistory = t; document.getElementById('hist-received-tab').classList.toggle('active', t==='received'); document.getElementById('hist-sent-tab').classList.toggle('active', t==='sent'); renderHistory(); }
 
@@ -144,24 +191,6 @@
       const isR = currentHistory === 'received';
       list.innerHTML += `<div class="msg-group ${isR?'received':'sent'}"><div class="msg-meta"><b>${isR?l.sender:l.receiver} ${isR?'から':'へ'}</b><span>${l.date}</span></div><div class="bubble">${l.text}</div></div>`;
     });
-  }
-
-  async function handleNfc(type) {
-    const email = document.getElementById(type==='register'?'regEmail':'loginEmail').value.trim();
-    if(!email) return alert("メールアドレスを入力してください");
-    try {
-      const ndef = new NDEFReader(); await ndef.scan();
-      ndef.onreading = async (e) => {
-        showLoading(true, "認証中...");
-        try {
-          const res = await callGas({ action: type==='register'?'register':'getUserData', email: email, nfcId: e.serialNumber });
-          showLoading(false);
-          if(res.error) alert(res.error);
-          else if(type==='register') alert("登録完了！");
-          else { localStorage.setItem('userEmail', email); localStorage.setItem('userNfc', e.serialNumber); location.reload(); }
-        } catch(e) { alert("通信エラー"); }
-      };
-    } catch(e) { alert("NFCエラー"); }
   }
 
   function logout() { localStorage.clear(); location.reload(); }
