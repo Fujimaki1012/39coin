@@ -17,7 +17,6 @@
     
     .top-header { background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%); padding: 1.2rem 1rem; border-radius: 0 0 35px 35px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-shrink: 0; }
     .app-title { font-weight: 900; color: #FFFFFF !important; font-size: 1.8rem; margin-bottom: 0.2rem !important; }
-    /* ★追加：サブタイトルのスタイル */
     .app-subtitle { color: #FFFFFF; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.8rem !important; opacity: 0.9; }
 
     .stat-card { background: white; padding: 0.5rem; border-radius: 15px; text-align: center; flex: 1; }
@@ -28,7 +27,11 @@
     .send-tabs { display: flex; background: rgba(255,255,255,0.3); border-radius: 10px; margin: 10px 0; padding: 2px; }
     .send-tab { flex: 1; text-align: center; font-size: 0.8rem; padding: 6px; border-radius: 8px; cursor: pointer; font-weight: bold; }
     .send-tab.active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    
+    /* ★修正：検索入力のスタイルと右の三角を消す */
     #employeeSearch { font-size: 1.3rem !important; height: 3.2rem !important; border-radius: 12px; font-weight: bold; margin-bottom: 10px; border: 2px solid #eee; }
+    #employeeSearch::-webkit-calendar-picker-indicator { display: none !important; }
+    
     .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; width: 100%; height: 75px !important; resize: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
     .btn-send { background: var(--btn-orange); color: white; border: none; border-radius: 20px; height: 50px; width: 100%; font-size: 1.3rem; font-weight: 900; margin-top: 10px; box-shadow: 0 6px 15px rgba(255,75,43,0.3); }
     .chrome-tabs { display: flex; background: #f1f3f4; border-bottom: 1px solid #ccc; padding-top: 8px; }
@@ -36,6 +39,7 @@
     .chrome-tab.active { background: white; font-weight: bold; color: #1a73e8; border-bottom: 2px solid white; margin-bottom: -1px; }
     .history-container { flex: 1; overflow-y: auto; padding: 1rem; background: white; }
     
+    /* --- 吹き出しスタイル --- */
     .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; width: 100%; }
     .bubble { padding: 0.8rem 1rem; border-radius: 15px; max-width: 85%; word-wrap: break-word; font-size: 0.95rem; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     
@@ -55,6 +59,13 @@
     .sent .msg-meta { justify-content: flex-end; }
     .sent .msg-meta-inner { display: flex; justify-content: flex-start; min-width: 170px; }
     .sent .msg-meta b { min-width: 100px; margin-right: 15px; }
+
+    /* ★修正：ハトのアニメーションとサイズを復活 */
+    .success-icon { font-size: 7rem; animation: bounce 0.8s infinite ease-in-out; display: block; margin-bottom: 1rem; }
+    @keyframes bounce { 
+      0%, 100% { transform: translateY(0); } 
+      50% { transform: translateY(-30px); } 
+    }
 
     .btn-waiting { animation: pulse 1.5s infinite; background-color: #666 !important; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
@@ -102,7 +113,7 @@
       <div class="column stat-card"><div class="stat-label">飛ばせるハト</div><div class="stat-value"><span id="remainsCount">-</span><span class="stat-unit">羽</span></div></div>
     </div>
     <div class="send-tabs"><div id="tab-touch" class="send-tab active" onclick="setSendMode('touch')">📱 直接タッチ</div><div id="tab-remote" class="send-tab" onclick="setSendMode('remote')">🕊️ 遠隔送信</div></div>
-    <div id="remote-search" style="display:none;"><input class="input" id="employeeSearch" list="employees" placeholder="名前を検索"></div>
+    <div id="remote-search" style="display:none;"><input class="input" id="employeeSearch" list="employees" placeholder="相手の名前を検索"></div>
     <datalist id="employees"></datalist>
     <textarea id="hatoMessage" class="textarea custom-textarea" placeholder="三感のメッセージを入力(必須)"></textarea>
     <button id="btnSend" class="btn-send" onclick="handleSend()">ハトを飛ばす</button>
@@ -112,6 +123,7 @@
 </div>
 
 <script>
+  // ★ここに自分のGAS URLを貼ってください
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
   let sendMode = 'touch', currentHistory = 'received', allData = null;
 
