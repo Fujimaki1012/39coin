@@ -14,8 +14,12 @@
     
     .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--deep-yellow); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
     .top-header { background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%); padding: 1.2rem 1rem; border-radius: 0 0 35px 35px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-shrink: 0; }
-    .app-title { font-weight: 900; color: #FFFFFF !important; font-size: 1.8rem; margin-bottom: 0.8rem !important; }
+    .app-title { font-weight: 900; color: #FFFFFF !important; font-size: 1.8rem; margin-bottom: 0.2rem !important; }
+    /* ★追加：サブタイトルのスタイル */
+    .app-subtitle { color: #FFFFFF; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.8rem !important; opacity: 0.9; }
+
     .stat-card { background: white; padding: 0.5rem; border-radius: 15px; text-align: center; flex: 1; }
     .stat-label { font-size: 0.65rem; color: #666; font-weight: bold; }
     .stat-value { font-size: 1.4rem; font-weight: 900; }
@@ -32,34 +36,24 @@
     .chrome-tab.active { background: white; font-weight: bold; color: #1a73e8; border-bottom: 2px solid white; margin-bottom: -1px; }
     .history-container { flex: 1; overflow-y: auto; padding: 1rem; background: white; }
     
-    /* --- メッセージ吹き出しのスタイル --- */
     .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; width: 100%; }
     .bubble { padding: 0.8rem 1rem; border-radius: 15px; max-width: 85%; word-wrap: break-word; font-size: 0.95rem; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     
-    /* 届いたメッセージ（左側・黄色） */
     .received { align-items: flex-start; }
     .received .bubble { background: #FFF176; border-top-left-radius: 2px; margin-left: 8px; }
-    /* 左上のとんがり */
     .received .bubble::after { content: ""; position: absolute; top: 0; left: -8px; border-style: solid; border-width: 0 8px 10px 0; border-color: transparent #FFF176 transparent transparent; }
 
-    /* 送ったメッセージ（右側・青色） */
     .sent { align-items: flex-end; }
     .sent .bubble { background: #E1F5FE; border-top-right-radius: 2px; margin-right: 8px; }
-    /* 右上のとんがり */
     .sent .bubble::after { content: ""; position: absolute; top: 0; right: -8px; border-style: solid; border-width: 10px 8px 0 0; border-color: #E1F5FE transparent transparent transparent; }
 
-    /* --- 名前と日時の整列設定 --- */
     .msg-meta { font-size: 0.72rem; color: #777; margin-bottom: 4px; display: flex; width: 100%; padding: 0 12px; }
     .msg-meta b { color: #333; font-weight: 800; display: inline-block; }
     .msg-meta span { color: #999; }
-
-    /* 届いたメッセージのメタ（左寄せ・日時は縦で揃える） */
     .received .msg-meta { justify-content: flex-start; }
-    .received .msg-meta b { min-width: 100px; margin-right: 15px; } /* 名前エリアを固定幅にして日時を揃える */
-
-    /* 送ったメッセージのメタ（右寄せ・名前の始まりを縦で揃える） */
+    .received .msg-meta b { min-width: 100px; margin-right: 15px; }
     .sent .msg-meta { justify-content: flex-end; }
-    .sent .msg-meta-inner { display: flex; justify-content: flex-start; min-width: 170px; } /* 右側に固定幅のブロックを作る */
+    .sent .msg-meta-inner { display: flex; justify-content: flex-start; min-width: 170px; }
     .sent .msg-meta b { min-width: 100px; margin-right: 15px; }
 
     .btn-waiting { animation: pulse 1.5s infinite; background-color: #666 !important; }
@@ -80,7 +74,10 @@
 </div>
 
 <div id="login-container" style="display:none; flex-direction:column; height:100vh;">
-  <div class="top-header has-text-centered"><h1 class="app-title" style="padding:1.5rem 0;">ハトメッセ</h1></div>
+  <div class="top-header has-text-centered">
+    <h1 class="app-title" style="padding-top:1.5rem;">ハトメッセ</h1>
+    <p class="app-subtitle">グッときたら、ハトを送り合おう</p>
+  </div>
   <div class="p-5">
     <div class="box" style="border-left: 8px solid #333;">
       <label class="label">🔑 ログイン</label>
@@ -99,6 +96,7 @@
 <div id="app-container" style="display:none; flex-direction:column; height:100vh;">
   <div class="top-header has-text-centered">
     <h1 class="app-title">ハトメッセ</h1>
+    <p class="app-subtitle">グッときたら、ハトを送り合おう</p>
     <div class="columns is-mobile is-gapless mb-0">
       <div class="column stat-card mr-2"><div class="stat-label">もらったポイント</div><div class="stat-value"><span id="receivedCount">-</span><span class="stat-unit">pt</span></div></div>
       <div class="column stat-card"><div class="stat-label">飛ばせるハト</div><div class="stat-value"><span id="remainsCount">-</span><span class="stat-unit">羽</span></div></div>
@@ -198,7 +196,6 @@
 
   function toggleHistory(t) { currentHistory = t; document.getElementById('hist-received-tab').classList.toggle('active', t==='received'); document.getElementById('hist-sent-tab').classList.toggle('active', t==='sent'); renderHistory(); }
 
-  // ★修正：履歴の描画ロジック
   function renderHistory() {
     if(!allData) return;
     const list = document.getElementById('message-list');
@@ -207,8 +204,6 @@
     logs.forEach(l => {
       const isR = currentHistory === 'received';
       const nameText = isR ? `${l.sender} さんから` : `${l.receiver} さんへ`;
-      
-      // レイアウトを構築
       const html = isR 
         ? `<div class="msg-group received">
             <div class="msg-meta"><b>${nameText}</b><span>${l.date}</span></div>
