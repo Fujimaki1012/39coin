@@ -9,9 +9,7 @@
     :root { --main-yellow: #FFD700; --deep-yellow: #FFB900; --btn-orange: linear-gradient(135deg, #FF4B2B 0%, #FF8C00 100%); }
     body { background-color: #FFFFFF; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; overflow: hidden; }
     
-    /* ★修正：初期状態は display: flex にして、最初からロード画面を見せる */
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.96); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-    
     #success-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.96); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
     
     .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--deep-yellow); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
@@ -33,13 +31,37 @@
     .chrome-tab { flex: 1; text-align: center; padding: 12px 0; font-size: 0.85rem; border-radius: 12px 12px 0 0; background: #dadce0; margin: 0 2px; cursor: pointer; }
     .chrome-tab.active { background: white; font-weight: bold; color: #1a73e8; border-bottom: 2px solid white; margin-bottom: -1px; }
     .history-container { flex: 1; overflow-y: auto; padding: 1rem; background: white; }
-    .msg-group { margin-bottom: 1rem; display: flex; flex-direction: column; }
-    .bubble { padding: 0.8rem 1rem; border-radius: 18px; max-width: 85%; word-wrap: break-word; font-size: 0.95rem; }
-    .received .bubble { background: #FFF176; align-self: flex-start; }
-    .sent .bubble { background: #E1F5FE; align-self: flex-end; }
-    .msg-meta { font-size: 0.7rem; color: #888; margin-bottom: 2px; display: flex; justify-content: space-between; padding: 0 5px; }
-    .success-icon { font-size: 5rem; animation: bounce 1s infinite; }
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    
+    /* --- メッセージ吹き出しのスタイル --- */
+    .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; width: 100%; }
+    .bubble { padding: 0.8rem 1rem; border-radius: 15px; max-width: 85%; word-wrap: break-word; font-size: 0.95rem; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    
+    /* 届いたメッセージ（左側・黄色） */
+    .received { align-items: flex-start; }
+    .received .bubble { background: #FFF176; border-top-left-radius: 2px; margin-left: 8px; }
+    /* 左上のとんがり */
+    .received .bubble::after { content: ""; position: absolute; top: 0; left: -8px; border-style: solid; border-width: 0 8px 10px 0; border-color: transparent #FFF176 transparent transparent; }
+
+    /* 送ったメッセージ（右側・青色） */
+    .sent { align-items: flex-end; }
+    .sent .bubble { background: #E1F5FE; border-top-right-radius: 2px; margin-right: 8px; }
+    /* 右上のとんがり */
+    .sent .bubble::after { content: ""; position: absolute; top: 0; right: -8px; border-style: solid; border-width: 10px 8px 0 0; border-color: #E1F5FE transparent transparent transparent; }
+
+    /* --- 名前と日時の整列設定 --- */
+    .msg-meta { font-size: 0.72rem; color: #777; margin-bottom: 4px; display: flex; width: 100%; padding: 0 12px; }
+    .msg-meta b { color: #333; font-weight: 800; display: inline-block; }
+    .msg-meta span { color: #999; }
+
+    /* 届いたメッセージのメタ（左寄せ・日時は縦で揃える） */
+    .received .msg-meta { justify-content: flex-start; }
+    .received .msg-meta b { min-width: 100px; margin-right: 15px; } /* 名前エリアを固定幅にして日時を揃える */
+
+    /* 送ったメッセージのメタ（右寄せ・名前の始まりを縦で揃える） */
+    .sent .msg-meta { justify-content: flex-end; }
+    .sent .msg-meta-inner { display: flex; justify-content: flex-start; min-width: 170px; } /* 右側に固定幅のブロックを作る */
+    .sent .msg-meta b { min-width: 100px; margin-right: 15px; }
+
     .btn-waiting { animation: pulse 1.5s infinite; background-color: #666 !important; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
   </style>
@@ -92,11 +114,9 @@
 </div>
 
 <script>
-  // ★ここに自分のGAS URLを貼ってください
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
   let sendMode = 'touch', currentHistory = 'received', allData = null;
 
-  // ★修正：表示切り替え関数
   function showLoading(s, t="Now Loading...") { 
     document.getElementById('loading').style.display = s ? 'flex' : 'none'; 
     if(s) document.getElementById('loading-text').innerText = t; 
@@ -155,16 +175,11 @@
     const email = document.getElementById(isReg ? 'regEmail' : 'loginEmail').value.trim();
     const btn = document.getElementById(isReg ? 'btnReg' : 'btnLogin');
     const originalText = btn.innerText;
-
     if(!email) return alert("メールアドレスを入力してください");
-
     try {
-      const ndef = new NDEFReader(); 
-      await ndef.scan();
-      
+      const ndef = new NDEFReader(); await ndef.scan();
       btn.innerText = "⌛ カードをかざしてください";
       btn.classList.add('btn-waiting');
-
       ndef.onreading = async (e) => {
         ndef.onreading = null;
         showLoading(true, "認証中...");
@@ -176,20 +191,14 @@
           if(res.error) alert(res.error);
           else if(isReg) alert("登録完了！ログインしてください");
           else { localStorage.setItem('userEmail', email); localStorage.setItem('userNfc', e.serialNumber); location.reload(); }
-        } catch(e) { 
-          showLoading(false); 
-          btn.innerText = originalText;
-          btn.classList.remove('btn-waiting');
-          alert("通信エラー"); 
-        }
+        } catch(e) { showLoading(false); btn.innerText = originalText; btn.classList.remove('btn-waiting'); alert("通信エラー"); }
       };
-    } catch(e) { 
-        alert("NFCが起動できませんでした"); 
-    }
+    } catch(e) { alert("NFCが起動できませんでした"); }
   }
 
   function toggleHistory(t) { currentHistory = t; document.getElementById('hist-received-tab').classList.toggle('active', t==='received'); document.getElementById('hist-sent-tab').classList.toggle('active', t==='sent'); renderHistory(); }
 
+  // ★修正：履歴の描画ロジック
   function renderHistory() {
     if(!allData) return;
     const list = document.getElementById('message-list');
@@ -197,16 +206,26 @@
     list.innerHTML = logs.length ? '' : '<p class="has-text-centered has-text-grey mt-5">履歴なし</p>';
     logs.forEach(l => {
       const isR = currentHistory === 'received';
-      list.innerHTML += `<div class="msg-group ${isR?'received':'sent'}"><div class="msg-meta"><b>${isR?l.sender:l.receiver} ${isR?'から':'へ'}</b><span>${l.date}</span></div><div class="bubble">${l.text}</div></div>`;
+      const nameText = isR ? `${l.sender} さんから` : `${l.receiver} さんへ`;
+      
+      // レイアウトを構築
+      const html = isR 
+        ? `<div class="msg-group received">
+            <div class="msg-meta"><b>${nameText}</b><span>${l.date}</span></div>
+            <div class="bubble">${l.text}</div>
+           </div>`
+        : `<div class="msg-group sent">
+            <div class="msg-meta"><div class="msg-meta-inner"><b>${nameText}</b><span>${l.date}</span></div></div>
+            <div class="bubble">${l.text}</div>
+           </div>`;
+      list.innerHTML += html;
     });
   }
 
   function logout() { localStorage.clear(); location.reload(); }
 
   window.onload = async () => {
-    // ★修正：初期ロード画面を表示させる
     showLoading(true, "Now Loading...");
-
     const urlParams = new URLSearchParams(window.location.search);
     const autoEmail = urlParams.get('email');
     if(autoEmail) {
