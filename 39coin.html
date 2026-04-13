@@ -11,13 +11,17 @@
   <style>
     :root { --main-yellow: #FFD700; --deep-yellow: #FFB900; --btn-orange: linear-gradient(135deg, #FF4B2B 0%, #FF8C00 100%); }
     body { background-color: #FFFFFF; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; overflow: hidden; }
+    
     #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.96); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
     #success-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.96); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    
     .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--deep-yellow); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
     .top-header { background: linear-gradient(180deg, var(--main-yellow) 0%, var(--deep-yellow) 100%); padding: 1.2rem 1rem; border-radius: 0 0 35px 35px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-shrink: 0; }
     .app-title { font-weight: 900; color: #FFFFFF !important; font-size: 1.8rem; margin-bottom: 0.2rem !important; }
     .app-subtitle { color: #FFFFFF; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.8rem !important; opacity: 0.9; }
+
     .stat-card { background: white; padding: 0.5rem; border-radius: 15px; text-align: center; flex: 1; }
     .stat-label { font-size: 0.65rem; color: #666; font-weight: bold; }
     .stat-value { font-size: 1.4rem; font-weight: 900; }
@@ -26,28 +30,48 @@
     .send-tabs { display: flex; background: rgba(255,255,255,0.3); border-radius: 10px; margin: 10px 0; padding: 2px; }
     .send-tab { flex: 1; text-align: center; font-size: 0.8rem; padding: 6px; border-radius: 8px; cursor: pointer; font-weight: bold; }
     .send-tab.active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    
+    /* ★修正：検索入力のスタイルと右の三角を消す */
     #employeeSearch { font-size: 1.3rem !important; height: 3.2rem !important; border-radius: 12px; font-weight: bold; margin-bottom: 10px; border: 2px solid #eee; }
     #employeeSearch::-webkit-calendar-picker-indicator { display: none !important; }
+    
     .custom-textarea { border-radius: 15px; border: none; padding: 0.8rem; font-size: 1rem; width: 100%; height: 75px !important; resize: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
     .btn-send { background: var(--btn-orange); color: white; border: none; border-radius: 20px; height: 50px; width: 100%; font-size: 1.3rem; font-weight: 900; margin-top: 10px; box-shadow: 0 6px 15px rgba(255,75,43,0.3); }
     .chrome-tabs { display: flex; background: #f1f3f4; border-bottom: 1px solid #ccc; padding-top: 8px; }
     .chrome-tab { flex: 1; text-align: center; padding: 12px 0; font-size: 0.85rem; border-radius: 12px 12px 0 0; background: #dadce0; margin: 0 2px; cursor: pointer; }
     .chrome-tab.active { background: white; font-weight: bold; color: #1a73e8; border-bottom: 2px solid white; margin-bottom: -1px; }
     .history-container { flex: 1; overflow-y: auto; padding: 1rem; background: white; }
+    
+    /* --- 吹き出しスタイル --- */
     .msg-group { margin-bottom: 1.5rem; display: flex; flex-direction: column; width: 100%; }
     .bubble { padding: 0.8rem 1rem; border-radius: 15px; max-width: 85%; word-wrap: break-word; font-size: 0.95rem; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    
     .received { align-items: flex-start; }
     .received .bubble { background: #FFF176; border-top-left-radius: 2px; margin-left: 8px; }
+    .received .bubble::after { content: ""; position: absolute; top: 0; left: -8px; border-style: solid; border-width: 0 8px 10px 0; border-color: transparent #FFF176 transparent transparent; }
+
     .sent { align-items: flex-end; }
     .sent .bubble { background: #E1F5FE; border-top-right-radius: 2px; margin-right: 8px; }
+    .sent .bubble::after { content: ""; position: absolute; top: 0; right: -8px; border-style: solid; border-width: 10px 8px 0 0; border-color: #E1F5FE transparent transparent transparent; }
+
     .msg-meta { font-size: 0.72rem; color: #777; margin-bottom: 4px; display: flex; width: 100%; padding: 0 12px; }
+    .msg-meta b { color: #333; font-weight: 800; display: inline-block; }
+    .msg-meta span { color: #999; }
+    .received .msg-meta { justify-content: flex-start; }
+    .received .msg-meta b { min-width: 100px; margin-right: 15px; }
+    .sent .msg-meta { justify-content: flex-end; }
+    .sent .msg-meta-inner { display: flex; justify-content: flex-start; min-width: 170px; }
+    .sent .msg-meta b { min-width: 100px; margin-right: 15px; }
+
+    /* ★修正：ハトのアニメーションとサイズを復活 */
     .success-icon { font-size: 7rem; animation: bounce 0.8s infinite ease-in-out; display: block; margin-bottom: 1rem; }
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+    @keyframes bounce { 
+      0%, 100% { transform: translateY(0); } 
+      50% { transform: translateY(-30px); } 
+    }
+
     .btn-waiting { animation: pulse 1.5s infinite; background-color: #666 !important; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-    /* チャット案内用バナー */
-    .chat-alert { background:#fff3cd; color:#856404; padding:10px; font-size:0.8rem; text-align:center; font-weight:bold; border-bottom:1px solid #ffeeba; }
-    .chat-link { color: #1a73e8; text-decoration: underline; margin-left: 5px; }
   </style>
 </head>
 <body>
@@ -76,6 +100,7 @@
     </div>
     <div class="box" style="border-left: 8px solid #FF8C00; margin-top: 2rem;">
       <label class="label">✨ はじめての登録</label>
+      <p class="is-size-7 has-text-grey mb-2">まだカードを登録していない方はこちら</p>
       <input class="input mb-4" id="regEmail" type="email" placeholder="メールアドレス">
       <button class="button is-danger is-fullwidth has-text-weight-bold" id="btnReg" onclick="handleNfc('register')">新しいカードを登録する</button>
     </div>
@@ -83,7 +108,6 @@
 </div>
 
 <div id="app-container" style="display:none; flex-direction:column; height:100vh;">
-  <div id="chat-alert-banner"></div>
   <div class="top-header has-text-centered">
     <h1 class="app-title">ハトメッセ</h1>
     <p class="app-subtitle">グッときたら、ハトを送り合おう</p>
@@ -102,7 +126,8 @@
 </div>
 
 <script>
-  const GAS_URL = "あなたのGASデプロイURL"; // ★ここに自分のURLを貼る
+  // ★ここに自分のGAS URLを貼ってください
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwx574Jbn-tfZtGU1UUUBRHv7G8KfbvMfaMEhGQ60nP-H-aV-L8HQM20rhNg5ACRZCX/exec";
   let sendMode = 'touch', currentHistory = 'received', allData = null;
 
   function showLoading(s, t="Now Loading...") { 
@@ -111,8 +136,9 @@
   }
 
   async function callGas(p) {
+    const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 35000);
     const url = new URL(GAS_URL); Object.keys(p).forEach(k => url.searchParams.append(k, p[k]));
-    const res = await fetch(url.toString(), { redirect: "follow" });
+    const res = await fetch(url.toString(), { redirect: "follow", signal: ctrl.signal });
     return await res.json();
   }
 
@@ -130,9 +156,12 @@
     } else {
       try {
         const ndef = new NDEFReader(); await ndef.scan();
-        btn.innerText = "⌛ 社員証をかざしてください"; btn.classList.add('btn-waiting');
+        btn.innerText = "⌛ 社員証をかざしてください";
+        btn.classList.add('btn-waiting');
         ndef.onreading = async (e) => {
-          ndef.onreading = null; btn.classList.remove('btn-waiting'); btn.innerText = "ハトを飛ばす";
+          ndef.onreading = null;
+          btn.classList.remove('btn-waiting');
+          btn.innerText = "ハトを飛ばす";
           showLoading(true, "ハトを飛ばしています...");
           try { const res = await callGas({ action: 'sendPoint', email: localStorage.getItem('userEmail'), targetMode: 'touch', targetValue: e.serialNumber, message: msg }); finishSend(res); } catch(e) { handleError(e); }
         };
@@ -144,7 +173,8 @@
     showLoading(false);
     if(res.error) { alert(res.error); document.getElementById('btnSend').innerText = "ハトを飛ばす"; }
     else {
-      const sound = document.getElementById('hatoSound'); if(sound) { sound.currentTime = 0; sound.play().catch(e => console.log(e)); }
+      const sound = document.getElementById('hatoSound');
+      if(sound) { sound.currentTime = 0; sound.play().catch(e => console.log(e)); }
       document.getElementById('success-target-name').innerText = res.receiver + " さんの元に";
       document.getElementById('success-screen').style.display = 'flex';
       setTimeout(() => location.reload(), 5000);
@@ -157,19 +187,24 @@
     const isReg = (type === 'register');
     const email = document.getElementById(isReg ? 'regEmail' : 'loginEmail').value.trim();
     const btn = document.getElementById(isReg ? 'btnReg' : 'btnLogin');
+    const originalText = btn.innerText;
     if(!email) return alert("メールアドレスを入力してください");
     try {
       const ndef = new NDEFReader(); await ndef.scan();
-      btn.innerText = "⌛ カードをかざしてください"; btn.classList.add('btn-waiting');
+      btn.innerText = "⌛ カードをかざしてください";
+      btn.classList.add('btn-waiting');
       ndef.onreading = async (e) => {
-        ndef.onreading = null; showLoading(true, "認証中...");
+        ndef.onreading = null;
+        showLoading(true, "認証中...");
         try {
           const res = await callGas({ action: isReg ? 'register' : 'getUserData', email: email, nfcId: e.serialNumber });
-          showLoading(false); btn.classList.remove('btn-waiting');
+          showLoading(false);
+          btn.innerText = originalText;
+          btn.classList.remove('btn-waiting');
           if(res.error) alert(res.error);
           else if(isReg) alert("登録完了！ログインしてください");
           else { localStorage.setItem('userEmail', email); localStorage.setItem('userNfc', e.serialNumber); location.reload(); }
-        } catch(e) { showLoading(false); alert("通信エラー"); }
+        } catch(e) { showLoading(false); btn.innerText = originalText; btn.classList.remove('btn-waiting'); alert("通信エラー"); }
       };
     } catch(e) { alert("NFCが起動できませんでした"); }
   }
@@ -184,10 +219,16 @@
     logs.forEach(l => {
       const isR = currentHistory === 'received';
       const nameText = isR ? `${l.sender} さんから` : `${l.receiver} さんへ`;
-      list.innerHTML += `<div class="msg-group ${isR ? 'received' : 'sent'}">
-        <div class="msg-meta"><b>${nameText}</b><span>${l.date}</span></div>
-        <div class="bubble">${l.text}</div>
-      </div>`;
+      const html = isR 
+        ? `<div class="msg-group received">
+            <div class="msg-meta"><b>${nameText}</b><span>${l.date}</span></div>
+            <div class="bubble">${l.text}</div>
+           </div>`
+        : `<div class="msg-group sent">
+            <div class="msg-meta"><div class="msg-meta-inner"><b>${nameText}</b><span>${l.date}</span></div></div>
+            <div class="bubble">${l.text}</div>
+           </div>`;
+      list.innerHTML += html;
     });
   }
 
@@ -211,16 +252,6 @@
           document.getElementById('app-container').style.display = 'flex';
           document.getElementById('receivedCount').innerText = allData.user.received;
           document.getElementById('remainsCount').innerText = allData.user.remains;
-
-          // ★追加：チャット未連携の場合の案内
-          if(!allData.user.chatStatus) {
-            document.getElementById('chat-alert-banner').innerHTML = `
-              <div class="chat-alert">
-                ⚠️ Google Chat通知が未設定です
-                <a href="https://mail.google.com/chat/" target="_blank" class="chat-link">ボットに話しかける</a>
-              </div>`;
-          }
-
           renderHistory();
           const emp = await callGas({ action: 'getEmployeeList' });
           emp.list.forEach(n => document.getElementById('employees').innerHTML += `<option value="${n}">`);
